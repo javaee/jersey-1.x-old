@@ -2,7 +2,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>jersey</groupId>
+    <groupId>com.sun.jersey</groupId>
     <artifactId>jersey-spring</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
@@ -11,7 +11,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>jersey</groupId>
+            <groupId>com.sun.jersey</groupId>
             <artifactId>jersey</artifactId>
             <version>0.8-ea-SNAPSHOT</version>
         </dependency>
@@ -160,7 +160,7 @@
                                 </property>
                                 <property>
                                     <name>resourcePackages</name>
-                                    <value>com.sun.ws.rest.spring;com.sun.ws.rest.spring25</value>
+                                    <value>com.sun.jersey.spring;com.sun.jersey.spring25</value>
                                 </property>
                             </systemProperties>
                         </configuration>
@@ -200,7 +200,7 @@
                                 </property>
                                 <property>
                                     <name>resourcePackages</name>
-                                    <value>com.sun.ws.rest.spring</value>
+                                    <value>com.sun.jersey.spring</value>
                                 </property>
                             </systemProperties>
                         </configuration>
