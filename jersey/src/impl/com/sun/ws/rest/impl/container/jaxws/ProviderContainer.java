@@ -54,6 +54,12 @@ public class ProviderContainer implements Provider<DataSource>, ContainerListene
         
     private WebApplication application;
     
+    /**
+     * Default constructor to conform to JAX-WS specification
+     * when implementations do eager (non-lazy) valuation.
+     */
+    public ProviderContainer() {        
+    }
     
     /**
      * Creates a new instance of ProviderContainer.
