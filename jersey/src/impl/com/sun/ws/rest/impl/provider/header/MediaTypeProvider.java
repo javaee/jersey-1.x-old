@@ -42,14 +42,14 @@ public class MediaTypeProvider implements HeaderDelegateProvider<MediaType> {
 
     public String toString(MediaType header) {
         StringBuilder b = new StringBuilder();
-        b.append(header.getType());
-        b.append('/');
-        b.append(header.getSubtype());
+        b.append(header.getType()).
+            append('/').
+            append(header.getSubtype());
         for (Map.Entry<String, String> e : header.getParameters().entrySet()) {
-            b.append(';');
-            b.append(e.getKey());
-            b.append('=');
-            WriterUtil.appendQuotedIfWhitespace(b, e.getValue());
+            b.append(';').
+                append(e.getKey()).
+                append('=');
+            WriterUtil.appendQuotedMediaType(b, e.getValue());
         }
         return b.toString();
     }

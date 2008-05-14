@@ -78,4 +78,18 @@ public class MediaTypeProviderTest extends TestCase {
         assertTrue(result.getParameters().containsKey("charset"));
         assertEquals(result.getParameters().get("charset"), "utf8");
     }
+    
+    public void testWithQuotedParam() {
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("foo", "\"bar\"");
+        MediaType header = new MediaType("application", "xml", params);
+        MediaTypeProvider instance = new MediaTypeProvider();
+        
+        String result = instance.toString(header);
+        String expResult = "application/xml;foo=\"\\\"bar\\\"\"";
+        assertEquals(expResult, result);
+        
+        MediaType m = instance.fromString(result);
+        assertEquals("\"bar\"", m.getParameters().get("foo"));
+    }    
 }

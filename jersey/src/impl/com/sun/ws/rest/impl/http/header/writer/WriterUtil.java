@@ -33,6 +33,20 @@ public class WriterUtil {
     
     private static Pattern whitespace = Pattern.compile("\\s");
 
+    private static Pattern whitespaceOrQuote = Pattern.compile("[\\s\"]");
+    
+    public static void appendQuotedMediaType(StringBuilder b, String value) {
+        if (value==null)
+            return;
+        Matcher m = whitespaceOrQuote.matcher(value);
+        boolean quote = m.find();
+        if (quote)
+            b.append('"');
+        appendEscapingQuotes(b, value);
+        if (quote)
+            b.append('"');        
+    }
+    
     public static void appendQuotedIfWhitespace(StringBuilder b, String value) {
         if (value==null)
             return;
@@ -40,21 +54,21 @@ public class WriterUtil {
         boolean quote = m.find();
         if (quote)
             b.append('"');
-        appendEscapingQuotes(b,value);
+        appendEscapingQuotes(b, value);
         if (quote)
             b.append('"');
     }
     
     public static void appendQuoted(StringBuilder b, String value) {
         b.append('"');
-        appendEscapingQuotes(b,value);
+        appendEscapingQuotes(b, value);
         b.append('"');
     }
     
     public static void appendEscapingQuotes(StringBuilder b, String value) {
-        for (int i=0;i<value.length();i++) {
+        for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c=='"')
+            if (c == '"')
                 b.append('\\');
             b.append(c);
         }
