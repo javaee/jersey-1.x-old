@@ -45,11 +45,11 @@ public class MediaTypeProvider implements HeaderDelegateProvider<MediaType> {
         b.append(header.getType());
         b.append('/');
         b.append(header.getSubtype());
-        for (String key: header.getParameters().keySet()) {
+        for (Map.Entry<String, String> e : header.getParameters().entrySet()) {
             b.append(';');
-            b.append(key);
+            b.append(e.getKey());
             b.append('=');
-            WriterUtil.appendQuotedIfWhitespace(b, header.getParameters().get(key));
+            WriterUtil.appendQuotedIfWhitespace(b, e.getValue());
         }
         return b.toString();
     }
@@ -73,7 +73,7 @@ public class MediaTypeProvider implements HeaderDelegateProvider<MediaType> {
             if (reader.hasNext())
                 params = HttpHeaderReader.readParameters(reader);
 
-            return new MediaType(type,subType,params);
+            return new MediaType(type, subType, params);
         } catch (ParseException ex) {
             throw new IllegalArgumentException(ex);
         }

@@ -37,15 +37,19 @@ public class MediaTypeProviderTest extends TestCase {
         super(testName);
     }
 
-    /**
-     * Test of toString method, of class com.sun.ws.rest.impl.http.header.provider.MediaTypeProvider.
-     */
     public void testToString() {
-        System.out.println("toString");
+        MediaType header = new MediaType("application", "xml");
+        MediaTypeProvider instance = new MediaTypeProvider();
         
+        String expResult = "application/xml";
+        String result = instance.toString(header);
+        assertEquals(expResult, result);
+    }
+    
+    public void testToStringWithParams() {
         HashMap<String, String> params = new HashMap<String, String>();
-        params.put("charset","utf8");
-        MediaType header = new MediaType("application","xml",params);
+        params.put("charset", "utf8");
+        MediaType header = new MediaType("application", "xml", params);
         MediaTypeProvider instance = new MediaTypeProvider();
         
         String expResult = "application/xml;charset=utf8";
@@ -53,26 +57,25 @@ public class MediaTypeProviderTest extends TestCase {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of fromString method, of class com.sun.ws.rest.impl.http.header.provider.MediaTypeProvider.
-     */
     public void testFromString() throws Exception {
-        System.out.println("fromString");
+        MediaTypeProvider instance = new MediaTypeProvider();
         
+        String header = "application/xml";
+        MediaType result = instance.fromString(header);
+        assertEquals(result.getType(), "application");
+        assertEquals(result.getSubtype(), "xml");
+        assertEquals(result.getParameters().size(), 0);
+    }
+    
+    public void testFromStringWithParams() throws Exception {
         String header = "application/xml;charset=utf8";
         MediaTypeProvider instance = new MediaTypeProvider();
         
         MediaType result = instance.fromString(header);
-        assertEquals(result.getType(),"application");
-        assertEquals(result.getSubtype(),"xml");
-        assertEquals(result.getParameters().size(),1);
+        assertEquals(result.getType(), "application");
+        assertEquals(result.getSubtype(), "xml");
+        assertEquals(result.getParameters().size(), 1);
         assertTrue(result.getParameters().containsKey("charset"));
-        assertEquals(result.getParameters().get("charset"),"utf8");
-        header = "application/xml";
-        result = instance.fromString(header);
-        assertEquals(result.getType(),"application");
-        assertEquals(result.getSubtype(),"xml");
-        assertEquals(result.getParameters().size(),0);
+        assertEquals(result.getParameters().get("charset"), "utf8");
     }
-    
 }
