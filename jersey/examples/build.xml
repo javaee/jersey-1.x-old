@@ -37,7 +37,6 @@
 	<ant dir="OptimisticConcurrency" target="${target}" inheritAll="false"/>
 	<ant dir="SimpleAtomServer" target="${target}" inheritAll="false"/>
 	<ant dir="SimpleConsole" target="${target}" inheritAll="false"/>
-	<ant dir="SimpleJAXWSEndpoint" target="${target}" inheritAll="false"/>
 	<ant dir="SimpleServlet" target="${target}" inheritAll="false"/>
 	<ant dir="StorageService" target="${target}" inheritAll="false"/>
     </target>
@@ -104,9 +103,6 @@
         </antcall>
         <antcall target="convert-property">
             <param name="example" value="SimpleConsole"/>
-        </antcall>
-        <antcall target="convert-property">
-            <param name="example" value="SimpleJAXWSEndpoint"/>
         </antcall>
         <antcall target="convert-property">
             <param name="example" value="SimpleServlet"/>
