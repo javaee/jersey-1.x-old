@@ -1,4 +1,7 @@
 release 0.8 (2008-06-20 or 2008-07-25)
+- Moved com.sun.ws.rest.impl.json.JSONJAXBContext to
+  com.sun.jersey.api.json.JSONJAXBContext.
+- Removed JAX-WS container.
 - Set<T> and SortedSet<T> can be used in addition to List<T> for the type of
   @*Param annotation parameters.
 - Packages "com.sun.ws.rest.api.*" renamed to "com.sun.jersey.api.*"

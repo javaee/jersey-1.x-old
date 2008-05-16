@@ -19,8 +19,10 @@
  * enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyrighted [year] [name of copyright owner]"
  */
+
 package com.sun.jersey.impl.json;
 
+import com.sun.jersey.api.json.JSONJAXBContext;
 import com.sun.jersey.impl.json.reader.JsonXmlStreamReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -237,7 +239,7 @@ public class JSONUnmarshaller implements Unmarshaller {
             this.jsonRootUnwrapping = (Boolean) value;
         } else if (JSONJAXBContext.JSON_XML2JSON_NS.equals(key)) {
             try {
-                this.xml2jsonNamespace = JSONJAXBContext.asMap((String) value);
+                this.xml2jsonNamespace = JSONTransformer.asMap((String) value);
             } catch (JSONException e) {
                 throw new PropertyException("JSON exception when trying to set " + JSONJAXBContext.JSON_XML2JSON_NS + " property.", e);
             }
@@ -256,7 +258,7 @@ public class JSONUnmarshaller implements Unmarshaller {
         } else if (JSONJAXBContext.JSON_ROOT_UNWRAPPING.equals(key)) {
             return this.jsonRootUnwrapping;
         } else if (JSONJAXBContext.JSON_XML2JSON_NS.equals(key)) {
-            return JSONJAXBContext.asJsonObject(this.xml2jsonNamespace);
+            return JSONTransformer.asJsonObject(this.xml2jsonNamespace);
         } else {
             if (key.startsWith(JSONJAXBContext.NAMESPACE)) {
                 return null;

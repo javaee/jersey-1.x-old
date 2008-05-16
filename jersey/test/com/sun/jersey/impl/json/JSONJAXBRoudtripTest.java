@@ -21,7 +21,7 @@
  */
 package com.sun.jersey.impl.json;
 
-import com.sun.jersey.impl.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONJAXBContext;
 import com.sun.jersey.impl.json.JSONUnmarshaller;
 import com.sun.jersey.impl.json.JSONMarshaller;
 import com.sun.jersey.impl.test.util.TestHelper;

@@ -22,7 +22,7 @@
 
 package com.sun.jersey.impl.json;
 
-import com.sun.jersey.impl.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONJAXBContext;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;

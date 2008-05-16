@@ -21,6 +21,7 @@
  */
 package com.sun.jersey.impl.json;
 
+import com.sun.jersey.api.json.JSONJAXBContext;
 import com.sun.jersey.impl.json.writer.JsonXmlStreamWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -144,19 +145,19 @@ public final class JSONMarshaller implements Marshaller {
             this.jsonRootUnwrapping = (Boolean) value;
         } else if (JSONJAXBContext.JSON_ARRAYS.equals(key)) {
             try {
-                this.arrays = JSONJAXBContext.asCollection((String) value);
+                this.arrays = JSONTransformer.asCollection((String) value);
             } catch (JSONException e) {
                 throw new PropertyException("JSON exception when trying to set " + JSONJAXBContext.JSON_ARRAYS + " property.", e);
             }
         } else if (JSONJAXBContext.JSON_NON_STRINGS.equals(key)) {
             try {
-                this.nonStrings = JSONJAXBContext.asCollection((String) value);
+                this.nonStrings = JSONTransformer.asCollection((String) value);
             } catch (JSONException e) {
                 throw new PropertyException("JSON exception when trying to set " + JSONJAXBContext.JSON_NON_STRINGS + " property.", e);
             }
         } else if (JSONJAXBContext.JSON_XML2JSON_NS.equals(key)) {
             try {
-                this.xml2jsonNamespace = JSONJAXBContext.asMap((String) value);
+                this.xml2jsonNamespace = JSONTransformer.asMap((String) value);
             } catch (JSONException e) {
                 throw new PropertyException("JSON exception when trying to set " + JSONJAXBContext.JSON_XML2JSON_NS + " property.", e);
             }
@@ -176,11 +177,11 @@ public final class JSONMarshaller implements Marshaller {
         } else if (JSONJAXBContext.JSON_ROOT_UNWRAPPING.equals(key)) {
             return this.jsonRootUnwrapping;
         } else if (JSONJAXBContext.JSON_ARRAYS.equals(key)) {
-            return JSONJAXBContext.asJsonArray(this.arrays);
+            return JSONTransformer.asJsonArray(this.arrays);
         } else if (JSONJAXBContext.JSON_NON_STRINGS.equals(key)) {
-            return JSONJAXBContext.asJsonArray(this.nonStrings);
+            return JSONTransformer.asJsonArray(this.nonStrings);
         } else if (JSONJAXBContext.JSON_XML2JSON_NS.equals(key)) {
-            return JSONJAXBContext.asJsonObject(this.xml2jsonNamespace);
+            return JSONTransformer.asJsonObject(this.xml2jsonNamespace);
         } else {
             if (key.startsWith(JSONJAXBContext.NAMESPACE)) {
                 return null;
