@@ -5,7 +5,6 @@
 
 package com.sun.jersey.spi.template;
 
-import com.sun.ws.rest.impl.template.*;
 import java.util.Set;
 
 /**

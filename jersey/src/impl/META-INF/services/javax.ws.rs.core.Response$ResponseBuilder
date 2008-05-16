@@ -1,1 +1,1 @@
-com.sun.ws.rest.impl.ResponseBuilderImpl
+com.sun.jersey.impl.ResponseBuilderImpl

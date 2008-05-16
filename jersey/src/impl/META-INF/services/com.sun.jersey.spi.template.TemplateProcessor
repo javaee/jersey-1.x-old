@@ -1,1 +1,1 @@
-com.sun.ws.rest.impl.container.servlet.JSPTemplateProcessor
+com.sun.jersey.impl.container.servlet.JSPTemplateProcessor

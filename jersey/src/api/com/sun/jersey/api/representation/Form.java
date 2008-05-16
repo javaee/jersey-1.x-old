@@ -22,7 +22,7 @@
 
 package com.sun.jersey.api.representation;
 
-import com.sun.ws.rest.impl.MultivaluedMapImpl;
+import com.sun.jersey.impl.MultivaluedMapImpl;
 
 /**
  * An implementation of {@link javax.ws.rs.core.MultivaluedMap} that may be

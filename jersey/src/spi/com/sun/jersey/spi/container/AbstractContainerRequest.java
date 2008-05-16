@@ -23,11 +23,11 @@
 package com.sun.jersey.spi.container;
 
 import com.sun.jersey.api.Responses;
-import com.sun.ws.rest.impl.MultivaluedMapImpl;
-import com.sun.ws.rest.impl.RequestHttpHeadersImpl;
-import com.sun.ws.rest.impl.VariantSelector;
-import com.sun.ws.rest.impl.http.header.reader.HttpHeaderReader;
-import com.sun.ws.rest.impl.model.HttpHelper;
+import com.sun.jersey.impl.MultivaluedMapImpl;
+import com.sun.jersey.impl.RequestHttpHeadersImpl;
+import com.sun.jersey.impl.VariantSelector;
+import com.sun.jersey.impl.http.header.reader.HttpHeaderReader;
+import com.sun.jersey.impl.model.HttpHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;

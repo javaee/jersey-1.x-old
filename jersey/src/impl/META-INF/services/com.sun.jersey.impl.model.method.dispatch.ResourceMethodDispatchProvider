@@ -1,0 +1,3 @@
+com.sun.jersey.impl.model.method.dispatch.EntityParamDispatchProvider
+com.sun.jersey.impl.model.method.dispatch.HttpReqResDispatchProvider
+com.sun.jersey.impl.model.method.dispatch.VoidVoidDispatchProvider

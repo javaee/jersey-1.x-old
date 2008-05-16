@@ -22,7 +22,7 @@
 
 package com.sun.jersey.api.client;
 
-import com.sun.ws.rest.impl.ResponseHttpHeadersImpl;
+import com.sun.jersey.impl.ResponseHttpHeadersImpl;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;

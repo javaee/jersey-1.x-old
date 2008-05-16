@@ -1,2 +1,2 @@
-com.sun.ws.rest.impl.container.httpserver.HttpHandlerContainerProvider
-com.sun.ws.rest.impl.container.grizzly.GrizzlyContainerProvider
+com.sun.jersey.impl.container.httpserver.HttpHandlerContainerProvider
+com.sun.jersey.impl.container.grizzly.GrizzlyContainerProvider

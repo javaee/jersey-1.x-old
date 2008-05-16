@@ -23,8 +23,8 @@
 package com.sun.jersey.spi.container;
 
 import com.sun.jersey.api.Responses;
-import com.sun.ws.rest.impl.ResponseHttpHeadersImpl;
-import com.sun.ws.rest.impl.ResponseImpl;
+import com.sun.jersey.impl.ResponseHttpHeadersImpl;
+import com.sun.jersey.impl.ResponseImpl;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;

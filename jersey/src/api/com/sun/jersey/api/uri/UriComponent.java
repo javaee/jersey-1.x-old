@@ -21,7 +21,7 @@
  */
 package com.sun.jersey.api.uri;
 
-import com.sun.ws.rest.impl.MultivaluedMapImpl;
+import com.sun.jersey.impl.MultivaluedMapImpl;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;

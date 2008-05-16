@@ -21,7 +21,7 @@
  */
 package com.sun.jersey.samples.jmaki.config;
 
-import com.sun.ws.rest.impl.json.JSONJAXBContext;
+import com.sun.jersey.impl.json.JSONJAXBContext;
 import com.sun.jersey.samples.jmaki.beans.Printer;
 import com.sun.jersey.samples.jmaki.beans.PrinterTableModel;
 import com.sun.jersey.samples.jmaki.beans.TreeModel;

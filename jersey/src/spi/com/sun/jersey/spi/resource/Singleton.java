@@ -22,7 +22,7 @@
 
 package com.sun.jersey.spi.resource;
 
-import com.sun.ws.rest.impl.resource.SingletonProvider;
+import com.sun.jersey.impl.resource.SingletonProvider;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

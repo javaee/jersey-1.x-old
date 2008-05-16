@@ -22,7 +22,7 @@
 
 package com.sun.jersey.api.core;
 
-import com.sun.ws.rest.impl.container.config.AnnotatedClassScanner;
+import com.sun.jersey.impl.container.config.AnnotatedClassScanner;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;

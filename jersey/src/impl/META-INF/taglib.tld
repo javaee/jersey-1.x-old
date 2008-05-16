@@ -11,7 +11,7 @@
   </info>
   <tag>
     <name>include</name>
-    <tagclass>com.sun.ws.rest.impl.container.servlet.Include</tagclass>
+    <tagclass>com.sun.jersey.impl.container.servlet.Include</tagclass>
     <bodycontent>empty</bodycontent>
     <attribute>
       <name>page</name>

@@ -22,7 +22,7 @@
 
 package com.sun.jersey.spi.resource;
 
-import com.sun.ws.rest.impl.resource.PerRequestProvider;
+import com.sun.jersey.impl.resource.PerRequestProvider;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

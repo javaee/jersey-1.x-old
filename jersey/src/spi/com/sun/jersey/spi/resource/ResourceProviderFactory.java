@@ -25,7 +25,7 @@ package com.sun.jersey.spi.resource;
 import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.api.model.AbstractResource;
-import com.sun.ws.rest.impl.resource.PerRequestProvider;
+import com.sun.jersey.impl.resource.PerRequestProvider;
 import com.sun.jersey.spi.service.ComponentProvider;
 import java.lang.annotation.Annotation;
 import java.util.Map;

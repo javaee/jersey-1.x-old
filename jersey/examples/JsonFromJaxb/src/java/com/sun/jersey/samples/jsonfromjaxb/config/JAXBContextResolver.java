@@ -22,7 +22,7 @@
 
 package com.sun.jersey.samples.jsonfromjaxb.config;
 
-import com.sun.ws.rest.impl.json.JSONJAXBContext;
+import com.sun.jersey.impl.json.JSONJAXBContext;
 import com.sun.jersey.samples.jsonfromjaxb.jaxb.FlightType;
 import com.sun.jersey.samples.jsonfromjaxb.jaxb.Flights;
 import java.util.Arrays;
