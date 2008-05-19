@@ -246,6 +246,26 @@ public class Client extends Filterable implements ClientHandler {
         return new WebResource(this, u);
     }
     
+    /**
+     * Create an asynchronous Web resource from the client.
+     * 
+     * @param u the URI of the resource.
+     * @return the Web resource.
+     */
+    public final AsyncWebResource asyncResource(String u) {
+        return asyncResource(URI.create(u));
+    }
+    
+    /**
+     * Create an asynchronous Web resource from the client.
+     * 
+     * @param u the URI of the resource.
+     * @return the Web resource.
+     */
+    public final AsyncWebResource asyncResource(URI u) {
+        return new AsyncWebResource(this, u);
+    }
+    
     // ClientHandler
     
     public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
