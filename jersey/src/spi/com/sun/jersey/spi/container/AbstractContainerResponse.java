@@ -183,10 +183,7 @@ public abstract class AbstractContainerResponse implements ContainerResponse {
         // Otherwise if there is no entity then there should be no content type
         else if (this.entity == null) {
             contentType = null;
-            if (status == 200) status = 204;
-        } else
-            if (status == 204) status = 200;
-        
+        }        
         if (response instanceof ResponseImpl) {
             this.headers = setResponseOptimal((ResponseImpl)response, contentType);
         } else {

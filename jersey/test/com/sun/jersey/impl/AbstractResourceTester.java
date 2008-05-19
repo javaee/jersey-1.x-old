@@ -119,11 +119,7 @@ public abstract class AbstractResourceTester extends TestCase {
             c.addFilter(new ClientFilter() {
                 public ClientResponse handle(ClientRequest ro) {
                     ClientResponse r = getNext().handle(ro);
-                    if (r.hasEntity()) {
-                        assertEquals(200, r.getStatus());
-                    } else {
-                        assertEquals(204, r.getStatus());
-                    }
+                    assertTrue(r.getStatus() < 300);
                     return r;
                 }
             });
