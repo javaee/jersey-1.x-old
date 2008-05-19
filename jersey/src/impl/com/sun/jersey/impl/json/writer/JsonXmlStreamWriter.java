@@ -304,7 +304,8 @@ public class JsonXmlStreamWriter implements XMLStreamWriter {
     }
 
     public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // we do not want to deal with namespaces
+        // the main goal of this writer is keep the produced json as simple as possible
     }
 
     public void writeProcessingInstruction(String target, String data) throws XMLStreamException {
