@@ -1,4 +1,6 @@
 release 0.8 (2008-06-20 or 2008-07-25)
+- Simple asynchronous client API returning Future<T>. Current implementation
+  utilizes one thread per-request.
 - Moved com.sun.ws.rest.impl.json.JSONJAXBContext to
   com.sun.jersey.api.json.JSONJAXBContext.
 - Removed JAX-WS container.
