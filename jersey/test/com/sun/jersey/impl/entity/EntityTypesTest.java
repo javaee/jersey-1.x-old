@@ -22,6 +22,7 @@
 
 package com.sun.jersey.impl.entity;
 
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.jersey.api.client.WebResource;
@@ -51,6 +52,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
@@ -306,4 +308,32 @@ public class EntityTypesTest extends AbstractTypeTester {
         WebResource r = resource("/");
         assertEquals("CONTENT", r.get(String.class));
     }
+    
+    @Path("/")
+    @ConsumeMime("application/json")
+    @ProduceMime("application/json")
+    public static class JAXBElementBeanJSONResource extends AResource<JAXBElement<String>> {}
+    
+    public void testJAXBElementBeanJSONRepresentation() {
+        initiateWebApplication(JAXBElementBeanJSONResource.class);
+        WebResource r = resource("/");
+
+        ClientResponse rib = r.type("application/json").
+                post(ClientResponse.class, new JAXBElement(new QName("test"), String.class, "CONTENT"));
+        
+        // TODO: the following would not be needed if i knew how to workaround JAXBElement<String>.class literal
+        
+        byte[] inBytes = (byte[])
+                rib.getProperties().get("request.entity");
+        byte[] outBytes = (byte[])
+                rib.getProperties().get("response.entity");
+        
+        assertEquals(inBytes.length, outBytes.length);
+        boolean e = false;
+        for (int i = 0; i < inBytes.length; i++) {
+            if (inBytes[i] != outBytes[i])
+                assertEquals("Index: " + i, inBytes[i], outBytes[i]);
+        }
+    }    
+
 }
