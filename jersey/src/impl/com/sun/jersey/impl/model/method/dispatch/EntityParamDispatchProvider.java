@@ -169,7 +169,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
         
         // Let through other methods
         
-        ParameterExtractor[] extractors = processParameters(abstractResourceMethod, requireNoEntityParameter);
+        ParameterExtractor[] extractors = processParameters(abstractResourceMethod, 
+                requireNoEntityParameter);
         if (extractors == null)
             return null;
         
@@ -236,7 +237,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
             }
         }
 
-        ParameterProcessor p = ParameterProcessorFactory.createParameterProcessor(parameter.getSource());
+        ParameterProcessor p = ParameterProcessorFactory.createParameterProcessor(
+                parameter.getSource());
         if (null == p) {
             return null;
         }
