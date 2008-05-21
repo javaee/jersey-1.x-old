@@ -23,6 +23,7 @@
 package com.sun.jersey.impl.model.parameter;
 
 import com.sun.jersey.api.core.HttpContext;
+import com.sun.jersey.spi.inject.InjectableContext;
 import com.sun.jersey.spi.inject.InjectableProvider;
 import com.sun.jersey.spi.inject.PerRequestInjectable;
 import java.lang.reflect.Type;
@@ -67,7 +68,7 @@ public final class HttpContextInjectableProvider implements
         injectables.put(UriInfo.class, ue);
     }
     
-    public PerRequestInjectable getInjectable(Type c) {
+    public PerRequestInjectable getInjectable(InjectableContext ic, Context a, Type c) {
         return injectables.get(c);
     }
 }

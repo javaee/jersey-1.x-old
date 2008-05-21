@@ -23,9 +23,15 @@
 package com.sun.jersey.spi.inject;
 
 /**
- *
+ * An injectable to get values that are constant in 
+ * the scope of the Web application.
+ * 
+ * @param T The type of the value to be injected
  * @author Paul.Sandoz@Sun.Com
  */
 public interface SingletonInjectable<T> extends Injectable {
+    /**
+     * @return the value to be injected.
+     */
     T getValue();
 }

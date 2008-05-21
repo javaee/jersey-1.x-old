@@ -21,13 +21,21 @@
  */
 package com.sun.jersey.impl.application;
 
+import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.model.Parameter;
+import com.sun.jersey.impl.model.ReflectionHelper;
 import com.sun.jersey.spi.inject.Injectable;
+import com.sun.jersey.spi.inject.InjectableContext;
 import com.sun.jersey.spi.inject.InjectableProvider;
-import com.sun.jersey.spi.inject.InjectableProviderContext;
+import com.sun.jersey.impl.application.InjectableProviderContext;
+import com.sun.jersey.spi.inject.SingletonInjectable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -46,12 +54,12 @@ public final class InjectableProviderFactory implements InjectableProviderContex
         MetaInjectableProvider(
                 InjectableProvider ip,
                 Class<? extends Annotation> ac, 
-                Class<? extends Injectable> ic,
-                Class<?> cc) {
+                Class<?> cc,
+                Class<? extends Injectable> ic) {
             this.ip = ip;
             this.ac = ac;
-            this.ic = ic;
             this.cc = cc;
+            this.ic = ic;
         }
     }
     
@@ -80,13 +88,17 @@ public final class InjectableProviderFactory implements InjectableProviderContex
     }
     
     private Type[] getMetaArguments(Class<?> c) {
-        while (c != Object.class) {
-            Type[] ts = c.getGenericInterfaces();
+        Class _c = c;
+        while (_c != Object.class) {
+            Type[] ts = _c.getGenericInterfaces();
             for (Type t : ts) {
                 if (t instanceof ParameterizedType) {
                     ParameterizedType pt = (ParameterizedType)t;
                     if (pt.getRawType() == InjectableProvider.class) {
                         Type[] args = pt.getActualTypeArguments();
+                        for (int i = 0; i < args.length; i++)
+                            args[i] = getResolvedType(args[i], c, _c);
+                            
                         if (args[0] instanceof Class &&
                                 args[1] instanceof Class &&
                                 (args[1] == Type.class || args[1] == Parameter.class) &&
@@ -96,10 +108,27 @@ public final class InjectableProviderFactory implements InjectableProviderContex
                 }
             }
             
-            c = c.getSuperclass();
+            _c = _c.getSuperclass();
         }
         
         return null;        
+    }
+    
+    private Type getResolvedType(Type t, Class c, Class dc) {
+        if (t instanceof Class)
+            return t;
+        else if (t instanceof TypeVariable) {
+            ReflectionHelper.ClassTypePair ct = ReflectionHelper.
+                    resolveTypeVariable(c, dc, (TypeVariable)t);
+            if (ct != null)
+                return ct.c;
+            else 
+                return t;
+        } else if (t instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)t;
+            return pt.getRawType();
+        } else
+            return t;
     }
     
     private Set<MetaInjectableProvider> findInjectableProviders(
@@ -118,33 +147,95 @@ public final class InjectableProviderFactory implements InjectableProviderContex
             Class<? extends Annotation> ac, 
             Class<?> cc) {
         Set<MetaInjectableProvider> subips = new LinkedHashSet<MetaInjectableProvider>();
-        for (MetaInjectableProvider i : ips)
-            if (ac == i.ac && cc == i.cc)
+        for (MetaInjectableProvider i : ips) {
+            if (ac == i.ac && i.cc.isAssignableFrom(cc)) {
                 subips.add(i);
+            }
+        }
             
         return subips;    
     }
     
-    public <C> Injectable getInjectable(
-            Class<? extends Annotation> ac, 
+    public <A extends Annotation, C> Injectable getInjectable(
+            Class<? extends Annotation> ac,
+            InjectableContext ic,
+            A a,
             C c) {
         for (MetaInjectableProvider mip : findInjectableProviders(ac, c.getClass())) {
-            Object i = mip.ip.getInjectable(c);
+            Object i = mip.ip.getInjectable(ic, a, c);
             if (i != null)
                 return (Injectable)i;
         }
         return null;
     }    
     
-    public <I extends Injectable, C> I getInjectable(
+    public <A extends Annotation, I extends Injectable, C> I getInjectable(
             Class<? extends Annotation> ac,             
+            InjectableContext ic,
+            A a,
             C c,
-            Class<? extends Injectable> ic) {
-        for (MetaInjectableProvider mip : findInjectableProviders(ac, ic, c.getClass())) {
-            Object i = mip.ip.getInjectable(c);
+            Class<? extends Injectable> iclass) {
+        for (MetaInjectableProvider mip : findInjectableProviders(ac, iclass, c.getClass())) {
+            Object i = mip.ip.getInjectable(ic, a, c);
             if (i != null)
                 return (I)i;
         }
         return null;
-    }    
+    }
+    
+    
+    public void injectResources(final Object o) {
+        Class oClass = o.getClass();
+        while (oClass != null) {
+            for (final Field f : oClass.getDeclaredFields()) {                
+                if (getFieldValue(o, f) != null) continue;
+                
+                final Annotation[] as = f.getAnnotations();
+                for (Annotation a : as) {
+                    final Injectable i = getInjectable(
+                            a.annotationType(), null, a, f.getGenericType());
+                    if (i != null && i instanceof SingletonInjectable) {
+                        SingletonInjectable si = (SingletonInjectable)i;
+                        
+                        Object v = si.getValue();
+                        
+                        setFieldValue(o, f, v);
+                    }
+                }
+                
+            }
+            oClass = oClass.getSuperclass();
+        }
+    }
+    
+    private void setFieldValue(final Object resource, final Field f, final Object value) {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                try {
+                    if (!f.isAccessible()) {
+                        f.setAccessible(true);
+                    }
+                    f.set(resource, value);
+                    return null;
+                } catch (IllegalAccessException e) {
+                    throw new ContainerException(e);
+                }
+            }
+        });
+    }
+    
+    private Object getFieldValue(final Object resource, final Field f) {
+        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                try {
+                    if (!f.isAccessible()) {
+                        f.setAccessible(true);
+                    }
+                    return f.get(resource);
+                } catch (IllegalAccessException e) {
+                    throw new ContainerException(e);
+                }
+            }
+        });
+    }
 }

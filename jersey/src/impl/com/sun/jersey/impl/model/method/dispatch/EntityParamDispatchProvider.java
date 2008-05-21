@@ -33,6 +33,7 @@ import com.sun.jersey.spi.dispatch.RequestDispatcher;
 import com.sun.jersey.impl.model.parameter.ParameterExtractor;
 import com.sun.jersey.impl.model.parameter.ParameterProcessor;
 import com.sun.jersey.impl.model.parameter.ParameterProcessorFactory;
+import com.sun.jersey.spi.inject.PerRequestInjectable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
@@ -46,6 +47,22 @@ import javax.ws.rs.core.Response;
  */
 public class EntityParamDispatchProvider implements ResourceMethodDispatchProvider {
                 
+    static final class EntityInjectable implements PerRequestInjectable<Object> {
+        final Class<?> c;
+        final Type t;
+        final Annotation[] as;
+        
+        EntityInjectable(Class c, Type t, Annotation[] as) {
+            this.c = c;
+            this.t = t;
+            this.as = as;
+        }
+
+        public Object getValue(HttpContext context) {
+            return context.getRequest().getEntity(c, t, as);
+        }        
+    }
+    
     static final class EntityExtractor implements ParameterExtractor {
         final Class<?> c;
         final Type t;

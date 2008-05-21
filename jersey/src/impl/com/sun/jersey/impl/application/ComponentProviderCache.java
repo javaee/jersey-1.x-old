@@ -88,14 +88,14 @@ public final class ComponentProviderCache {
             // Dependent class of provider not found
             // This assumes that ex.getLocalizedMessage() returns
             // the name of a dependent class that is not found
-            LOGGER.log(Level.WARNING,
+            LOGGER.log(Level.CONFIG,
                     "A dependent class, " + ex.getLocalizedMessage() + 
                     ", of the component " + provider + " is not found." +
                     " The component is ignored.");
             return null;
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
-            LOGGER.log(Level.WARNING,
+            LOGGER.log(Level.CONFIG,
                     "The provider class, " + provider + 
                     ", could not be instantiated");
             return null;

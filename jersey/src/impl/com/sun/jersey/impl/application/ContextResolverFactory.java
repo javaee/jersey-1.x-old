@@ -22,7 +22,7 @@
 
 package com.sun.jersey.impl.application;
 
-import com.sun.jersey.spi.resource.TypeInjectable;
+import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -42,28 +42,18 @@ import javax.ws.rs.ext.ContextResolver;
 public final class ContextResolverFactory {
     private static final Logger LOGGER = Logger.getLogger(ContextResolverFactory.class.getName());
     
-    private static final class ContextResolverInjectable 
-            extends TypeInjectable<Context, ContextResolver> {
-        
-        private final ContextResolver cr;
-                
-        ContextResolverInjectable(ContextResolver cr) {
-            this.cr = cr;
-        }
-        
-        public Class<Context> getAnnotationClass() {
-            return Context.class;
-        }
-
-        public ContextResolver getInjectableValue(Context a) {
-            return cr;
+    private static final class ContextResolverInjectableProvider
+            extends SingletonTypeInjectableProvider<Context, ContextResolver> {
+        ContextResolverInjectableProvider(Type t, ContextResolver instance) {
+            super(t, instance);
         }
     }
     
-    private final Map<Type, TypeInjectable<Context, ContextResolver>> injectables = 
-                new HashMap<Type, TypeInjectable<Context, ContextResolver>>();
+    private final List<ContextResolverInjectableProvider> injectables = 
+            new ArrayList<ContextResolverInjectableProvider>();
     
-    public ContextResolverFactory(ComponentProviderCache componentProviderCache) {        
+    public ContextResolverFactory(ComponentProviderCache componentProviderCache,
+            InjectableProviderFactory ipf) {        
         Set<ContextResolver> providers = 
                 componentProviderCache.getProviders(ContextResolver.class);
         Map<ParameterizedType, List<ContextResolver<?>>> typeMap = 
@@ -75,13 +65,11 @@ public final class ContextResolverFactory {
         }
         
         reduceToInjectables(typeMap);
+        
+        for (ContextResolverInjectableProvider i : injectables) {
+            ipf.add(i);
+        }
     }
-
-    
-    public Map<Type, TypeInjectable<Context, ContextResolver>> getInjectables() {
-        return injectables;
-    }
-    
     
     private Set<ParameterizedType> getTypes(Class providerClass) {
         Set<ParameterizedType> types = new HashSet<ParameterizedType>();
@@ -119,8 +107,8 @@ public final class ContextResolverFactory {
     
     private void reduceToInjectables(Map<ParameterizedType, List<ContextResolver<?>>> typeMap) {
         for (Map.Entry<ParameterizedType, List<ContextResolver<?>>> e : typeMap.entrySet()) {            
-            injectables.put(e.getKey(), 
-                    new ContextResolverInjectable(reduce(e.getValue())));
+            injectables.add(
+                    new ContextResolverInjectableProvider(e.getKey(), reduce(e.getValue())));
         }
     }
     

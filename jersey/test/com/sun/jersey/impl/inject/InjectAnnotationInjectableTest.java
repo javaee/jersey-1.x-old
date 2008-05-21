@@ -29,7 +29,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import com.sun.jersey.impl.AbstractResourceTester;
-import com.sun.jersey.spi.resource.Inject;
+import com.sun.jersey.spi.inject.Inject;
 import com.sun.jersey.spi.service.ComponentProvider;
 
 /**

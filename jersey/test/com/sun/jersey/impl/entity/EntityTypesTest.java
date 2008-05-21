@@ -319,7 +319,7 @@ public class EntityTypesTest extends AbstractTypeTester {
         WebResource r = resource("/");
 
         ClientResponse rib = r.type("application/json").
-                post(ClientResponse.class, new JAXBElement(new QName("test"), String.class, "CONTENT"));
+                post(ClientResponse.class, new JAXBElement<String>(new QName("test"), String.class, "CONTENT"));
         
         // TODO: the following would not be needed if i knew how to workaround JAXBElement<String>.class literal
         

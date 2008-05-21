@@ -19,35 +19,28 @@
  * enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyrighted [year] [name of copyright owner]"
  */
+package com.sun.jersey.spi.inject;
 
-package com.sun.jersey.spi.resource;
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
- * Injectable functionality to a field that is annotated with a particular 
- * annotation and supports a particular type.
+ * Used to annotate fields that shall be injected with instances pulled
+ * from the component provider.<br>
+ * Created on: Apr 12, 2008<br>
  * 
- * @param <T> The type of the annotation class.
- * @param <V> the return type of the injectable value.
- * 
+ * @author <a href="mailto:martin.grotzke@freiheit.com">Martin Grotzke</a>
+ * @version $Id$
  */
-public abstract class TypeInjectable<T extends Annotation, V> extends Injectable<T, V> {
+@Target({FIELD, PARAMETER, CONSTRUCTOR })
+@Retention(RUNTIME)
+@Documented
+public @interface Inject {
 
-    /* (non-Javadoc)
-     * @see com.sun.jersey.spi.resource.Injectable#getInjectableValue(java.lang.Object, java.lang.reflect.Field, java.lang.annotation.Annotation)
-     */
-    @Override
-    public V getInjectableValue(Object o, Field f, T a) {
-        return getInjectableValue(a);
-    }
-        
-    /**
-     * Get the object to inject onto the field.
-     * 
-     * @param a the annotation.
-     * @return the instance to inject onto the field.
-     */
-    public abstract V getInjectableValue(T a);    
 }

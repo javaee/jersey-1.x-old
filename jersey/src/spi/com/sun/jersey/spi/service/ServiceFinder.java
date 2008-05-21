@@ -524,17 +524,17 @@ public final class ServiceFinder<T> implements Iterable<T> {
                         Class.forName(nextName, true, loader);
                     } catch (ClassNotFoundException ex) {
                         // Provider implementation not found
-                        if(LOGGER.isLoggable(Level.WARNING)) {
-                            LOGGER.log(Level.WARNING, 
+                        if(LOGGER.isLoggable(Level.CONFIG)) {
+                            LOGGER.log(Level.CONFIG, 
                                     SpiMessages.PROVIDER_NOT_FOUND(nextName, service));
                         }
                         nextName = null;
                     } catch (NoClassDefFoundError ex) {
                         // Dependent class of provider not found
-                        if(LOGGER.isLoggable(Level.WARNING)) {
+                        if(LOGGER.isLoggable(Level.CONFIG)) {
                             // This assumes that ex.getLocalizedMessage() returns
                             // the name of a dependent class that is not found
-                            LOGGER.log(Level.WARNING , 
+                            LOGGER.log(Level.CONFIG , 
                                     SpiMessages.DEPENDENT_CLASS_OF_PROVIDER_NOT_FOUND(
                                     ex.getLocalizedMessage(), nextName, service));
                         }
@@ -635,10 +635,10 @@ public final class ServiceFinder<T> implements Iterable<T> {
                 } catch (NoClassDefFoundError ex) {
                     // Dependent class of provider not found
                     if (ignoreOnClassNotFound) {
-                        if(LOGGER.isLoggable(Level.WARNING)) {
+                        if(LOGGER.isLoggable(Level.CONFIG)) {
                             // This assumes that ex.getLocalizedMessage() returns
                             // the name of a dependent class that is not found
-                            LOGGER.log(Level.WARNING , 
+                            LOGGER.log(Level.CONFIG , 
                                     SpiMessages.DEPENDENT_CLASS_OF_PROVIDER_NOT_FOUND(
                                     ex.getLocalizedMessage(), nextName, service));
                         }

@@ -26,8 +26,11 @@ import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.spi.container.WebApplication;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
-import com.sun.jersey.spi.resource.TypeInjectable;
+import com.sun.jersey.spi.inject.InjectableContext;
+import com.sun.jersey.spi.inject.InjectableProvider;
+import com.sun.jersey.spi.inject.SingletonInjectable;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,12 +82,11 @@ public class ServletAdaptor extends ServletContainer {
             }
         }
         
-        wa.addInjectable(EntityManagerFactory.class,
-                new TypeInjectable<PersistenceUnit, EntityManagerFactory>() {
-            public Class<PersistenceUnit> getAnnotationClass() {
-                return PersistenceUnit.class;
-            }
-            public EntityManagerFactory getInjectableValue(PersistenceUnit pu) {
+        wa.addInjectable(new InjectableProvider<PersistenceUnit, Type, SingletonInjectable>() {
+            public SingletonInjectable<EntityManagerFactory> getInjectable(InjectableContext ic, PersistenceUnit pu, Type c) {
+                if (!c.equals(EntityManagerFactory.class))
+                    return null;
+                
                 // TODO localize error message
                 if (!persistenceUnits.containsKey(pu.unitName()))
                     throw new ContainerException("Persistence unit '"+
@@ -93,13 +95,17 @@ public class ServletAdaptor extends ServletContainer {
                 String jndiName = persistenceUnits.get(pu.unitName());
                 ThreadLocalNamedInvoker<EntityManagerFactory> emfHandler =
                         new ThreadLocalNamedInvoker<EntityManagerFactory>(jndiName);
-                EntityManagerFactory emf = (EntityManagerFactory) Proxy.newProxyInstance(
+                final EntityManagerFactory emf = (EntityManagerFactory) Proxy.newProxyInstance(
                         EntityManagerFactory.class.getClassLoader(),
                         new Class[] {EntityManagerFactory.class },
                         emfHandler);
-                return emf;
-            }
-        }
-        );
+                
+                return new SingletonInjectable<EntityManagerFactory>() {
+                    public EntityManagerFactory getValue() {
+                        return emf;
+                    }                    
+                };
+            }            
+        });        
     }    
 }

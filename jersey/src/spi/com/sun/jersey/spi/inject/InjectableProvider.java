@@ -25,9 +25,28 @@ package com.sun.jersey.spi.inject;
 import java.lang.annotation.Annotation;
 
 /**
- *
+ * An injectable provider provides an injectable which in turn may be used
+ * to obtain the instance to inject onto a field, bean setter method, parameter
+ * of a constructor, or parameter of a method.
+ * 
+ * @param A the annotation type
+ * @param C the context type. Types of the {@link java.lang.reflect.Type} and 
+ *        {@link com.sun.jersey.api.model.Parameter} are the only types that
+ *        are supported.
+ * @param I the injectable type. The types, or subtypes of, {@link PerRequestInjectable} 
+ *        and {@link SingletonInjectable} are the only types that are supported.
  * @author Paul.Sandoz@Sun.Com
  */
 public interface InjectableProvider<A extends Annotation, C, I extends Injectable> {
-    I getInjectable(C c);
+    
+    /**
+     * Get an injectable.
+     * 
+     * @param ic the injectable context
+     * @param a the annotation instance
+     * @param c the context instance
+     * @return an Injectable instance, otherwise null if an instance cannot
+     *         be created.
+     */
+    I getInjectable(InjectableContext ic, A a, C c);
 }

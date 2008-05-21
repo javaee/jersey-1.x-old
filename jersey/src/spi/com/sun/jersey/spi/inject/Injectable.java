@@ -23,7 +23,8 @@
 package com.sun.jersey.spi.inject;
 
 /**
- *
+ * The base interface for something that is injectable.
+ * 
  * @author Paul.Sandoz@Sun.Com
  */
 public interface Injectable {

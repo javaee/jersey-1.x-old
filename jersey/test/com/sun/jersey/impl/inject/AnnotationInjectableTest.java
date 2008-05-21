@@ -21,6 +21,7 @@
  */
 package com.sun.jersey.impl.inject;
 
+import com.sun.jersey.spi.inject.InjectableContext;
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -31,12 +32,13 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import java.lang.reflect.Field;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import com.sun.jersey.impl.AbstractResourceTester;
-import com.sun.jersey.spi.resource.Injectable;
+import com.sun.jersey.spi.inject.InjectableProvider;
+import com.sun.jersey.spi.inject.SingletonInjectable;
+import java.lang.reflect.Type;
 
 /**
  * TODO: DESCRIBE ME<br>
@@ -68,16 +70,14 @@ public class AnnotationInjectableTest extends AbstractResourceTester {
         final String value = "foo";
         
         initiateWebApplication(MyResource.class);
-        super.w.addInjectable(new Injectable<MyAnnotation, String>() {
-            @Override
-            public String getInjectableValue(Object o, Field f, MyAnnotation a) {
-                return value;
-            }
-
-            @Override
-            public Class<MyAnnotation> getAnnotationClass() {
-                return MyAnnotation.class;
-            }
+        super.w.addInjectable(new InjectableProvider<MyAnnotation, Type, SingletonInjectable<String>>() {
+            public SingletonInjectable<String> getInjectable(InjectableContext ic, MyAnnotation a, Type c) {
+                return new SingletonInjectable<String>() {
+                    public String getValue() {
+                        return value;
+                    }                    
+                };
+            }            
         });
         
         assertEquals( value, resource("/").get(String.class) );   

@@ -19,28 +19,28 @@
  * enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyrighted [year] [name of copyright owner]"
  */
-package com.sun.jersey.spi.resource;
 
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package com.sun.jersey.impl.application;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import com.sun.jersey.spi.inject.Injectable;
+import com.sun.jersey.spi.inject.InjectableContext;
+import java.lang.annotation.Annotation;
 
 /**
- * Used to annotate fields that shall be injected with instances pulled
- * from the component provider.<br>
- * Created on: Apr 12, 2008<br>
- * 
- * @author <a href="mailto:martin.grotzke@freiheit.com">Martin Grotzke</a>
- * @version $Id$
+ *
+ * @author Paul.Sandoz@Sun.Com
  */
-@Target({FIELD, PARAMETER, CONSTRUCTOR })
-@Retention(RUNTIME)
-@Documented
-public @interface Inject {
-
+public interface InjectableProviderContext {    
+    public <A extends Annotation, C> Injectable getInjectable(
+            Class<? extends Annotation> ac,
+            InjectableContext ic,
+            A a,
+            C c);
+    
+    public <A extends Annotation, I extends Injectable, C> I getInjectable(
+            Class<? extends Annotation> ac,             
+            InjectableContext ic,
+            A a,
+            C c,
+            Class<? extends Injectable> iclass);
 }

@@ -33,10 +33,11 @@ import com.sun.jersey.spi.container.ContainerListener;
 import com.sun.jersey.spi.container.ContainerNotifier;
 import com.sun.jersey.spi.container.WebApplication;
 import com.sun.jersey.spi.container.WebApplicationFactory;
-import com.sun.jersey.spi.resource.TypeInjectable;
+import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.ApplicationConfig;
@@ -321,9 +323,11 @@ public class ServletContainer extends HttpServlet implements ContainerListener {
         return WebApplicationFactory.createWebApplication();
     }
     
-    private abstract class ContextInjectable<V> extends TypeInjectable<Context, V> {
-        public Class<Context> getAnnotationClass() {
-            return Context.class;
+    private static class ContextInjectableProvider<T> extends
+            SingletonTypeInjectableProvider<Context, T> {
+
+        ContextInjectableProvider(Type type, T instance) {
+            super(type, instance);
         }
     }
     
@@ -349,42 +353,26 @@ public class ServletContainer extends HttpServlet implements ContainerListener {
      * @param wa the Web application
      */
     protected void configure(final ServletConfig sc, ResourceConfig rc, WebApplication wa) {
-        wa.addInjectable(HttpServletRequest.class,
-                new ContextInjectable<HttpServletRequest>() {
-            public HttpServletRequest getInjectableValue(Context r) {
-                HttpServletRequest servletRequest = (HttpServletRequest)Proxy.newProxyInstance(
+        wa.addInjectable(new ContextInjectableProvider<HttpServletRequest>(
+                HttpServletRequest.class,
+                (HttpServletRequest)Proxy.newProxyInstance(
                         HttpServletRequest.class.getClassLoader(),
                         new Class[] { HttpServletRequest.class },
-                        requestInvoker);
-                return servletRequest;
-            }
-        }
-        );
-        wa.addInjectable(HttpServletResponse.class,
-                new ContextInjectable<HttpServletResponse>() {
-            public HttpServletResponse getInjectableValue(Context r) {
-                HttpServletResponse servletResponse = (HttpServletResponse)Proxy.newProxyInstance(
+                        requestInvoker)));
+        
+        wa.addInjectable(new ContextInjectableProvider<HttpServletResponse>(
+                HttpServletResponse.class,
+                (HttpServletResponse)Proxy.newProxyInstance(
                         HttpServletResponse.class.getClassLoader(),
                         new Class[] { HttpServletResponse.class },
-                        responseInvoker);
-                return servletResponse;
-            }
-        }
-        );
-        wa.addInjectable(ServletConfig.class,
-                new ContextInjectable<ServletConfig>() {
-            public ServletConfig getInjectableValue(Context r) {
-                return sc;
-            }
-        }
-        );
-        wa.addInjectable(ServletContext.class,
-                new ContextInjectable<ServletContext>() {
-            public ServletContext getInjectableValue(Context r) {
-                return sc.getServletContext();
-            }
-        }
-        );
+                        responseInvoker)));
+        
+        wa.addInjectable(new ContextInjectableProvider<ServletConfig>(
+                ServletConfig.class, sc));
+        
+        wa.addInjectable(new ContextInjectableProvider<ServletContext>(
+                ServletContext.class, 
+                sc.getServletContext()));
     }
     
     /**

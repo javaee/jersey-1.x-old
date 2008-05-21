@@ -24,21 +24,19 @@ package com.sun.jersey.api.client;
 
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.impl.application.ComponentProviderCache;
 import com.sun.jersey.impl.application.ContextResolverFactory;
+import com.sun.jersey.impl.application.InjectableProviderFactory;
 import com.sun.jersey.impl.application.MessageBodyFactory;
 import com.sun.jersey.impl.client.urlconnection.URLConnectionClientHandler;
 import com.sun.jersey.spi.container.MessageBodyContext;
-import com.sun.jersey.spi.resource.TypeInjectable;
+import com.sun.jersey.spi.inject.InjectableProvider;
+import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import com.sun.jersey.spi.service.ComponentProvider;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.core.Context;
 
 /**
@@ -58,8 +56,8 @@ import javax.ws.rs.core.Context;
  * @author Paul.Sandoz@Sun.Com
  */
 public class Client extends Filterable implements ClientHandler {
-    private final Map<Type, TypeInjectable> injectables;
-
+    private InjectableProviderFactory injectableFactory;
+    
     private final ClientConfig config;
     
     private final ComponentProvider provider;
@@ -133,9 +131,11 @@ public class Client extends Filterable implements ClientHandler {
         }
     }
     
-    private abstract class HttpContextInjectable<V> extends TypeInjectable<Context, V> {
-        public Class<Context> getAnnotationClass() {
-            return Context.class;
+    private static class ContextInjectableProvider<T> extends
+            SingletonTypeInjectableProvider<Context, T> {
+
+        ContextInjectableProvider(Type type, T instance) {
+            super(type, instance);
         }
     }
     
@@ -174,18 +174,13 @@ public class Client extends Filterable implements ClientHandler {
         // Defer instantiation of root to component provider
         super(root);
     
-        this.injectables = new HashMap<Type, TypeInjectable>();
-        
+        this.injectableFactory = new InjectableProviderFactory();
+
         this.config = config;
-        // Allow injection of client config
-        addInjectable(ResourceConfig.class,
-                new HttpContextInjectable<ClientConfig>() {
-                    public ClientConfig getInjectableValue(Context c) {
-                        return Client.this.config;
-                    }
-                }
-            );        
-                           
+        // Allow injection of resource config
+        injectableFactory.add(new ContextInjectableProvider<ClientConfig>(
+                ClientConfig.class, config));
+        
         // Set up the component provider
         this.provider = (provider == null)
             ? new DefaultComponentProvider()
@@ -196,34 +191,25 @@ public class Client extends Filterable implements ClientHandler {
                 config.getProviderClasses());
 
         // Obtain all context resolvers
-        ContextResolverFactory crf = new ContextResolverFactory(cpc);
-        this.injectables.putAll(crf.getInjectables());
+        ContextResolverFactory crf = new ContextResolverFactory(cpc, injectableFactory);
 
         // Obtain all message body readers/writers
         this.bodyContext = new MessageBodyFactory(cpc);
         // Allow injection of message body context
-        addInjectable(MessageBodyContext.class,
-                new HttpContextInjectable<MessageBodyContext>() {
-                    public MessageBodyContext getInjectableValue(Context c) {
-                        return bodyContext;
-                    }
-                }
-            );
+        injectableFactory.add(new ContextInjectableProvider<MessageBodyContext>(
+                MessageBodyContext.class, bodyContext));
             
         // Inject resources on root client handler
         injectResources(root);
     }
         
     /**
-     * Add an injectable resource to the set maintained by the client.
-     * The fieldType is used as a unique key and therefore adding an injectable
-     * for a type already supported will override the existing one.
+     * Add an injectable provider that provides injectable values.
      * 
-     * @param fieldType the type of the field that will be injected.
-     * @param injectable the injectable for the field.
+     * @param ip the injectable provider
      */
-    public final void addInjectable(Type fieldType, TypeInjectable injectable) {
-        injectables.put(fieldType, injectable);
+    void addInjectable(InjectableProvider<?, ?, ?> ip) {
+        injectableFactory.add(ip);        
     }
     
     /**
@@ -275,20 +261,9 @@ public class Client extends Filterable implements ClientHandler {
     //
     
     private void injectResources(Object o) {
-        injectResources(o.getClass(), o);
+        injectableFactory.injectResources(o);
     }
-    
-    private void injectResources(Class oClass, Object o) {
-        while (oClass != null) {
-            for (Field f : oClass.getDeclaredFields()) {            
-                TypeInjectable i = injectables.get(f.getGenericType());
-                if (i != null)
-                    i.inject(o, f);
-            }
-            oClass = oClass.getSuperclass();
-        }
-    }
-    
+        
     /**
      * Create a default client.
      * 

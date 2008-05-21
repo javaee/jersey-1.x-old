@@ -22,20 +22,32 @@
 
 package com.sun.jersey.spi.inject;
 
-import com.sun.jersey.api.core.HttpContext;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 /**
- * An injectable to get values that are dependent on the context
- * of the HTTP request.
- * 
- * @param T the type of the value to be injected
+ *
  * @author Paul.Sandoz@Sun.Com
  */
-public interface PerRequestInjectable<T> extends Injectable {
+public abstract class SingletonTypeInjectableProvider<A extends Annotation, T> 
+    implements InjectableProvider<A, Type, SingletonInjectable>, SingletonInjectable<T> {
+
+    private final Type t;
+    private final T instance;
+        
+    public SingletonTypeInjectableProvider(Type t, T instance) {
+        this.t = t;
+        this.instance = instance;
+    }
     
-    /**
-     * @param context the HTTP context
-     * @return the value to be injected..
-     */
-    T getValue(HttpContext context);
+    public SingletonInjectable getInjectable(InjectableContext ic, A a, Type c) {
+        if (c.equals(t)) {
+            return this;
+        } else
+            return null;
+    }
+
+    public T getValue() {
+        return instance;
+    }        
 }
