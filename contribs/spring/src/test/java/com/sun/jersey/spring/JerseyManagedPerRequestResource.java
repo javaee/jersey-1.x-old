@@ -28,7 +28,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ProduceMime;
 
-import com.sun.jersey.spi.resource.Inject;
+import com.sun.jersey.spi.inject.Inject;
 import com.sun.jersey.spi.resource.PerRequest;
 
 /**
