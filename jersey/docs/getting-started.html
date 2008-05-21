@@ -11,11 +11,11 @@
     <p>Create the following Java class in your project:</p>
     <pre>
  1    // The Java class will be hosted at the URI path "/helloworld"
- 2    @UriTemplate("/helloworld")
+ 2    @Path("/helloworld")
  3    public class HelloWorldResource {
  4    
  5        // The Java method will process HTTP GET requests
- 6        @HttpMethod("GET") 
+ 6        @GET 
  7        // The Java method will produce content identified by the MIME Media
  8        // type "text/plain"
  9        @ProduceMime("text/plain")
