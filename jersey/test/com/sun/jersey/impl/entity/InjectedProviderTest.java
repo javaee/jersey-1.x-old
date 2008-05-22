@@ -46,7 +46,7 @@ import javax.ws.rs.ext.Provider;
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class InjectedProviderTest2 extends AbstractResourceTester {
+public class InjectedProviderTest extends AbstractResourceTester {
     public static class Bean implements Serializable {
         private String string;
 
@@ -113,7 +113,7 @@ public class InjectedProviderTest2 extends AbstractResourceTester {
         }
     }
     
-    public InjectedProviderTest2(String testName) {
+    public InjectedProviderTest(String testName) {
         super(testName);
     }
     

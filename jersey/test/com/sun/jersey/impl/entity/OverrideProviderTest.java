@@ -24,9 +24,6 @@ package com.sun.jersey.impl.entity;
 
 import com.sun.jersey.impl.AbstractResourceTester;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.impl.entity.BeanStreamingTest.Bean;
-import com.sun.jersey.impl.entity.BeanStreamingTest.BeanResource;
-import com.sun.jersey.impl.entity.InjectedProviderTest2.InjectedBeanProvider;
 import com.sun.jersey.impl.provider.entity.AbstractMessageReaderWriterProvider;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +34,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 
 /**
@@ -45,6 +41,10 @@ import javax.ws.rs.ext.Provider;
  * @author Paul.Sandoz@Sun.Com
  */
 public class OverrideProviderTest extends AbstractResourceTester {
+    public OverrideProviderTest(String testName) {
+        super(testName);
+    }
+    
     @Provider
     public static class StringProvider extends AbstractMessageReaderWriterProvider<String> {
         public boolean isReadable(Class<?> type, Type genericType, Annotation annotations[]) {
@@ -86,12 +86,56 @@ public class OverrideProviderTest extends AbstractResourceTester {
         }
     }
     
-    public OverrideProviderTest(String testName) {
-        super(testName);
+    public void testString() throws Exception {
+        initiateWebApplication(StringResource.class, StringProvider.class);
+                
+        WebResource r = resource("/");
+        assertEquals("foo", r.get(String.class));
+    }    
+    
+    @Provider
+    public static class JAXBBeanProvider extends AbstractMessageReaderWriterProvider<JAXBBean> {
+        public boolean isReadable(Class<?> type, Type genericType, Annotation annotations[]) {
+            return JAXBBean.class.isAssignableFrom(type);
+        }
+
+        public JAXBBean readFrom(
+                Class<JAXBBean> type, 
+                Type genericType, 
+                Annotation annotations[],
+                MediaType mediaType, 
+                MultivaluedMap<String, String> httpHeaders, 
+                InputStream entityStream) throws IOException {
+            String s = readFromAsString(entityStream, mediaType);
+            return new JAXBBean(s);
+        }
+
+        public boolean isWriteable(Class<?> type, Type genericType, Annotation annotations[]) {
+            return JAXBBean.class.isAssignableFrom(type);
+        }
+    
+        public void writeTo(
+                JAXBBean t, 
+                Class<?> type, 
+                Type genericType, 
+                Annotation annotations[], 
+                MediaType mediaType, 
+                MultivaluedMap<String, Object> httpHeaders,
+                OutputStream entityStream) throws IOException {
+            writeToAsString(t.value, entityStream, mediaType);
+        }
     }
     
-    public void testBean() throws Exception {
-        initiateWebApplication(StringResource.class, StringProvider.class);
+    @Path("/")
+    public static class JAXBBeanResource {
+        @GET
+        public JAXBBean get() {
+            return new JAXBBean("foo");
+        }
+    }
+    
+    public void testJAXBBean() throws Exception {
+        initiateWebApplication(JAXBBeanResource.class, JAXBBeanProvider.class);
                 
         WebResource r = resource("/");
         assertEquals("foo", r.get(String.class));
