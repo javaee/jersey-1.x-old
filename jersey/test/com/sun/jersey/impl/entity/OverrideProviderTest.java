@@ -24,106 +24,76 @@ package com.sun.jersey.impl.entity;
 
 import com.sun.jersey.impl.AbstractResourceTester;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.impl.entity.BeanStreamingTest.Bean;
+import com.sun.jersey.impl.entity.BeanStreamingTest.BeanResource;
+import com.sun.jersey.impl.entity.InjectedProviderTest2.InjectedBeanProvider;
 import com.sun.jersey.impl.provider.entity.AbstractMessageReaderWriterProvider;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 /**
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class InjectedProviderTest extends AbstractResourceTester {
-    public static class Bean implements Serializable {
-        private String string;
-
-        public Bean() { }
-
-        public Bean(String string) {
-            this.string = string;
-        }
-
-        public String getString() { return string; }
-
-        public void setString(String string) { this.string = string; }
-    }
-
+public class OverrideProviderTest extends AbstractResourceTester {
     @Provider
-    public static class InjectedBeanProvider extends AbstractMessageReaderWriterProvider<Bean> {
-        @Context UriInfo uriInfo;
-        
+    public static class StringProvider extends AbstractMessageReaderWriterProvider<String> {
         public boolean isReadable(Class<?> type, Type genericType, Annotation annotations[]) {
-            return type == Bean.class;
+            return type == String.class;
         }
 
-        public Bean readFrom(
-                Class<Bean> type, 
+        public String readFrom(
+                Class<String> type, 
                 Type genericType, 
                 Annotation annotations[],
                 MediaType mediaType, 
                 MultivaluedMap<String, String> httpHeaders, 
                 InputStream entityStream) throws IOException {
-            ObjectInputStream oin = new ObjectInputStream(entityStream);
-            try {
-                return (Bean)oin.readObject();
-            } catch (ClassNotFoundException cause) {
-                IOException effect = new IOException(cause.getLocalizedMessage());
-                effect.initCause(cause);
-                throw effect;
-            }
+            String s = readFromAsString(entityStream, mediaType);
+            return s.toUpperCase();
         }
 
         public boolean isWriteable(Class<?> type, Type genericType, Annotation annotations[]) {
-            return type == Bean.class;
+            return type == String.class;
         }
     
         public void writeTo(
-                Bean t, 
+                String t, 
                 Class<?> type, 
                 Type genericType, 
                 Annotation annotations[], 
                 MediaType mediaType, 
                 MultivaluedMap<String, Object> httpHeaders,
                 OutputStream entityStream) throws IOException {
-            t.setString(uriInfo.getRequestUri().toString());
-            ObjectOutputStream out = new ObjectOutputStream(entityStream);
-            out.writeObject(t);
-            out.flush();
+            writeToAsString(t.toLowerCase(), entityStream, mediaType);
         }
     }
     
-    @Path("/one/two/three")
-    public static class BeanResource {
+    @Path("/")
+    public static class StringResource {
         @GET
-        public Bean get() {
-            return new Bean("");
+        public String get() {
+            return "FOO";
         }
     }
     
-    public InjectedProviderTest(String testName) {
+    public OverrideProviderTest(String testName) {
         super(testName);
     }
     
     public void testBean() throws Exception {
-        initiateWebApplication(BeanResource.class, InjectedBeanProvider.class);
+        initiateWebApplication(StringResource.class, StringProvider.class);
                 
-        WebResource r = resource("/one/two/three");
-        Bean b = r.get(Bean.class);
-        String requestUri = UriBuilder.fromUri(BASE_URI).
-                path(BeanResource.class).build().toString();
-        assertEquals(requestUri, b.getString());
+        WebResource r = resource("/");
+        assertEquals("foo", r.get(String.class));
     }    
 }
