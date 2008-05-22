@@ -28,16 +28,20 @@ import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.model.Parameter;
 import com.sun.jersey.impl.ResponseBuilderImpl;
+import com.sun.jersey.impl.application.InjectableProviderContext;
 import com.sun.jersey.impl.model.ReflectionHelper;
 import com.sun.jersey.spi.dispatch.RequestDispatcher;
-import com.sun.jersey.impl.model.parameter.ParameterExtractor;
-import com.sun.jersey.impl.model.parameter.ParameterProcessor;
-import com.sun.jersey.impl.model.parameter.ParameterProcessorFactory;
+import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestInjectable;
+import com.sun.jersey.spi.inject.SingletonInjectable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -47,6 +51,10 @@ import javax.ws.rs.core.Response;
  */
 public class EntityParamDispatchProvider implements ResourceMethodDispatchProvider {
                 
+    public EntityParamDispatchProvider() {
+        int i = 0;
+    }
+    
     static final class EntityInjectable implements PerRequestInjectable<Object> {
         final Class<?> c;
         final Type t;
@@ -62,37 +70,29 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
             return context.getRequest().getEntity(c, t, as);
         }        
     }
-    
-    static final class EntityExtractor implements ParameterExtractor {
-        final Class<?> c;
-        final Type t;
-        final Annotation[] as;
         
-        EntityExtractor(Class c, Type t, Annotation[] as) {
-            this.c = c;
-            this.t = t;
-            this.as = as;
-        }
-        
-        public Object extract(HttpContext context) {
-            return context.getRequest().getEntity(c, t, as);
-        }
-    }
-    
     static abstract class EntityParamInInvoker extends ResourceJavaMethodDispatcher {        
-        final private ParameterExtractor[] injectors;
+        final private List<Injectable> is;
         
-        EntityParamInInvoker(AbstractResourceMethod abstractResourceMethod, ParameterExtractor[] injectors) {
+        EntityParamInInvoker(AbstractResourceMethod abstractResourceMethod, 
+                List<Injectable> is) {
             super(abstractResourceMethod);
-            this.injectors = injectors;
+            this.is = is;
         }
 
         protected final Object[] getParams(HttpContext context) {
-            final Object[] params = new Object[injectors.length];
+            final Object[] params = new Object[is.size()];
             try {
-                for (int i = 0; i < injectors.length; i++)
-                    params[i] = injectors[i].extract(context);
-                
+                int index = 0;
+                for (Injectable i : is) {
+                    if (i instanceof SingletonInjectable) {
+                        params[index++] = ((SingletonInjectable)i).getValue();                    
+                    } else if (i instanceof PerRequestInjectable) {
+                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
+                    } else {
+                        params[index++] = null;
+                    }
+                }
                 return params;
             } catch (WebApplicationException e) {
                 throw e;
@@ -103,8 +103,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
     }
     
     static final class VoidOutInvoker extends EntityParamInInvoker {
-        VoidOutInvoker(AbstractResourceMethod abstractResourceMethod, ParameterExtractor[] injectors) {
-            super(abstractResourceMethod, injectors);
+        VoidOutInvoker(AbstractResourceMethod abstractResourceMethod, List<Injectable> is) {
+            super(abstractResourceMethod, is);
         }
 
         @SuppressWarnings("unchecked")
@@ -116,8 +116,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
     }
     
     static final class TypeOutInvoker extends EntityParamInInvoker {
-        TypeOutInvoker(AbstractResourceMethod abstractResourceMethod, ParameterExtractor[] injectors) {
-            super(abstractResourceMethod, injectors);
+        TypeOutInvoker(AbstractResourceMethod abstractResourceMethod, List<Injectable> is) {
+            super(abstractResourceMethod, is);
         }
 
         @SuppressWarnings("unchecked")
@@ -133,8 +133,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
     }
     
     static final class ResponseOutInvoker extends EntityParamInInvoker {
-        ResponseOutInvoker(AbstractResourceMethod abstractResourceMethod, ParameterExtractor[] injectors) {
-            super(abstractResourceMethod, injectors);
+        ResponseOutInvoker(AbstractResourceMethod abstractResourceMethod, List<Injectable> is) {
+            super(abstractResourceMethod, is);
         }
 
         @SuppressWarnings("unchecked")
@@ -149,8 +149,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
     }
     
     static final class ObjectOutInvoker extends EntityParamInInvoker {
-        ObjectOutInvoker(AbstractResourceMethod abstractResourceMethod, ParameterExtractor[] injectors) {
-            super(abstractResourceMethod, injectors);
+        ObjectOutInvoker(AbstractResourceMethod abstractResourceMethod, List<Injectable> is) {
+            super(abstractResourceMethod, is);
         }
 
         public void _dispatch(Object resource, HttpContext context)
@@ -169,7 +169,8 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
             }            
         }
     }
-        
+
+    @Context InjectableProviderContext ipc;
     
     public RequestDispatcher create(AbstractResourceMethod abstractResourceMethod) {
         boolean requireReturnOfRepresentation = false;
@@ -186,50 +187,52 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
         
         // Let through other methods
         
-        ParameterExtractor[] extractors = processParameters(abstractResourceMethod, 
+        List<Injectable> is = processParameters(abstractResourceMethod, 
                 requireNoEntityParameter);
-        if (extractors == null)
+        if (is == null)
             return null;
         
         Class<?> returnType = abstractResourceMethod.getMethod().getReturnType();
         if (Response.class.isAssignableFrom(returnType)) {
-            return new ResponseOutInvoker(abstractResourceMethod, extractors);                
+            return new ResponseOutInvoker(abstractResourceMethod, is);                
         } else if (returnType != void.class) {
             if (returnType == Object.class) {
-                return new ObjectOutInvoker(abstractResourceMethod, extractors);
+                return new ObjectOutInvoker(abstractResourceMethod, is);
             } else {
-                return new TypeOutInvoker(abstractResourceMethod, extractors);
+                return new TypeOutInvoker(abstractResourceMethod, is);
             }
         } else if (requireReturnOfRepresentation) {
             return null;
         } else {
-            return new VoidOutInvoker(abstractResourceMethod, extractors);
+            return new VoidOutInvoker(abstractResourceMethod, is);
         }
     }
     
-    private ParameterExtractor[] processParameters(AbstractResourceMethod method,
+    private List<Injectable> processParameters(AbstractResourceMethod method,
             boolean requireNoEntityParameter) {
         
         if ((null == method.getParameters()) || (0 == method.getParameters().size())) {
-            return new ParameterExtractor[0];
+            return Collections.emptyList();
         }
         
-        ParameterExtractor[] extractors = new ParameterExtractor[method.getParameters().size()];
+        List<Injectable> is = new ArrayList<Injectable>(method.getParameters().size());
         for (int i = 0; i < method.getParameters().size(); i++) {
-            extractors[i] = processParameter(
+            Injectable injectable = processParameter(
                     method,
                     method.getParameters().get(i),
                     method.getMethod().getParameterAnnotations()[i],
                     requireNoEntityParameter);
             
-            if (extractors[i] == null)
+            if (injectable == null)
                 return null;
+            
+            is.add(injectable);
         }
         
-        return extractors;
+        return is;
     }
 
-    private ParameterExtractor processParameter(
+    private Injectable processParameter(
             AbstractResourceMethod method,
             Parameter parameter, 
             Annotation[] annotations,
@@ -247,19 +250,14 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
                         method.getMethod().getDeclaringClass(),
                         (TypeVariable)parameter.getParameterType());
                 
-                return (ct != null) ? new EntityExtractor(ct.c, ct.t, annotations) : null;
+                return (ct != null) ? new EntityInjectable(ct.c, ct.t, annotations) : null;
             } else {
-                return new EntityExtractor(parameter.getParameterClass(), 
+                return new EntityInjectable(parameter.getParameterClass(), 
                         parameter.getParameterType(), annotations);
             }
         }
 
-        ParameterProcessor p = ParameterProcessorFactory.createParameterProcessor(
-                parameter.getSource());
-        if (null == p) {
-            return null;
-        }
-        
-        return p.process(parameter);
+        Injectable i = ipc.getInjectable(parameter);
+        return i;
     }        
 }

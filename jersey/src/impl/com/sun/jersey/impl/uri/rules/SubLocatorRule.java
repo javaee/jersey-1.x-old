@@ -24,12 +24,15 @@ package com.sun.jersey.impl.uri.rules;
 
 import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.uri.UriTemplate;
-import com.sun.jersey.impl.model.parameter.ParameterExtractor;
+import com.sun.jersey.spi.inject.Injectable;
+import com.sun.jersey.spi.inject.PerRequestInjectable;
+import com.sun.jersey.spi.inject.SingletonInjectable;
 import com.sun.jersey.spi.uri.rules.UriRule;
 import com.sun.jersey.spi.uri.rules.UriRuleContext;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.List;
 import javax.ws.rs.WebApplicationException;
 
 /**
@@ -39,15 +42,15 @@ import javax.ws.rs.WebApplicationException;
  */
 public final class SubLocatorRule extends BaseRule {
 
-    private final ParameterExtractor[] extractors;
+    private final List<Injectable> is;
     
     private final Method m;
 
     public SubLocatorRule(UriTemplate template,
-            Method m, ParameterExtractor[] extractors) {
+            Method m, List<Injectable> is) {
         super(template);
         this.m = m;
-        this.extractors = extractors;
+        this.is = is;
     }
 
     public boolean accept(CharSequence path, Object resource, UriRuleContext context) {
@@ -77,12 +80,20 @@ public final class SubLocatorRule extends BaseRule {
     private Object invokeSubLocator(Object resource, UriRuleContext context) {
         // Invoke the sub-locator method
         try {
-            if (extractors == null) {
+            if (is.size() == 0) {
                 return m.invoke(resource);
             } else {
-                final Object[] params = new Object[extractors.length];
-                for (int i = 0; i < extractors.length; i++)
-                    params[i] = extractors[i].extract(context);
+                final Object[] params = new Object[is.size()];
+                int index = 0;
+                for (Injectable i : is) {
+                    if (i instanceof SingletonInjectable) {
+                        params[index++] = ((SingletonInjectable)i).getValue();                    
+                    } else if (i instanceof PerRequestInjectable) {
+                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
+                    } else {
+                        params[index++] = null;
+                    }
+                }
                 
                 return m.invoke(resource, params);
             }

@@ -65,6 +65,12 @@ import com.sun.jersey.impl.ImplMessages;
 import com.sun.jersey.impl.ThreadLocalHttpContext;
 import com.sun.jersey.impl.model.ResourceClass;
 import com.sun.jersey.impl.model.RulesMap;
+import com.sun.jersey.impl.model.parameter.CookieParamInjectableProvider;
+import com.sun.jersey.impl.model.parameter.HeaderParamInjectableProvider;
+import com.sun.jersey.impl.model.parameter.HttpContextInjectableProvider;
+import com.sun.jersey.impl.model.parameter.MatrixParamInjectableProvider;
+import com.sun.jersey.impl.model.parameter.PathParamInjectableProvider;
+import com.sun.jersey.impl.model.parameter.QueryParamInjectableProvider;
 import com.sun.jersey.impl.modelapi.annotation.IntrospectionModeller;
 import com.sun.jersey.impl.modelapi.validation.BasicValidator;
 import com.sun.jersey.impl.template.TemplateFactory;
@@ -134,8 +140,10 @@ public final class WebApplicationImpl implements WebApplication {
     
     private TemplateContext templateContext;
     
+    private ResourceMethodDispatcherFactory dispatcherFactory;
+    
     private ResourceContext resourceContext;
-
+        
     public WebApplicationImpl() {
         this.resolverFactory = ResourceProviderFactory.getInstance();
 
@@ -158,6 +166,8 @@ public final class WebApplicationImpl implements WebApplication {
         
         // Create injectable provider factory
         this.injectableFactory = new InjectableProviderFactory(); 
+        injectableFactory.add(new ContextInjectableProvider<InjectableProviderContext>(
+                InjectableProviderContext.class, injectableFactory));
         
         // Add proxied injectables
         final Map<Type, Object> m = new HashMap<Type, Object>();
@@ -248,7 +258,8 @@ public final class WebApplicationImpl implements WebApplication {
             throw new ContainerException(ImplMessages.FATAL_ISSUES_FOUND_AT_RES_CLASS(ar.getResourceClass().getName()));
         }
         return new ResourceClass(resourceConfig,
-                getComponentProvider(), resolverFactory, ar);
+                getComponentProvider(), resolverFactory, dispatcherFactory,
+                injectableFactory, ar);
     }
 
     private AbstractResource getAbstractResource(Class c) {
@@ -427,6 +438,9 @@ public final class WebApplicationImpl implements WebApplication {
         injectableFactory.add(new ContextInjectableProvider<TemplateContext>(
                 TemplateContext.class, templateContext));
 
+        // Obtain all resource method dispatchers
+        this.dispatcherFactory = new ResourceMethodDispatcherFactory(cpc);
+        
         // Obtain all message body readers/writers
         this.bodyFactory = new MessageBodyFactory(cpc);
         injectableFactory.add(
@@ -436,9 +450,17 @@ public final class WebApplicationImpl implements WebApplication {
                 new ContextInjectableProvider<MessageBodyWorkers>(
                 MessageBodyWorkers.class, bodyFactory));
 
+        // Add per-request-based injectable providers
+        injectableFactory.add(new CookieParamInjectableProvider());
+        injectableFactory.add(new HeaderParamInjectableProvider());
+        injectableFactory.add(new HttpContextInjectableProvider());
+        injectableFactory.add(new MatrixParamInjectableProvider());
+        injectableFactory.add(new PathParamInjectableProvider());
+        injectableFactory.add(new QueryParamInjectableProvider());
+        
         // Obtain all root resources
         this.rootsRule = new RootResourceClassesRule(
-                processRootResources(resourceConfig.getResourceClasses()));
+                processRootResources(resourceConfig.getResourceClasses()));       
     }
 
     public MessageBodyContext getMessageBodyContext() {

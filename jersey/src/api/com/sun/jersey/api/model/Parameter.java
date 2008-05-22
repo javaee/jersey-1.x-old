@@ -1,24 +1,28 @@
 /*
- * The contents of this file are subject to the terms
- * of the Common Development and Distribution License
- * (the "License").  You may not use this file except
- * in compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2007 Sun Microsystems, Inc. All rights reserved. 
+ * 
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (the "License").  You may not use this file
+ * except in compliance with the License. 
+ * 
+ * You can obtain a copy of the License at:
+ *     https://jersey.dev.java.net/license.txt
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * You can obtain a copy of the license at
- * http://www.opensource.org/licenses/cddl1.php
- * See the License for the specific language governing
- * permissions and limitations under the License.
- */
-
-/*
- * Parameter.java
- *
- * Created on October 5, 2007, 11:49 AM
- *
+ * When distributing the Covered Code, include this CDDL Header Notice in each
+ * file and include the License file at:
+ *     https://jersey.dev.java.net/license.txt
+ * If applicable, add the following below this CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ *     "Portions Copyrighted [year] [name of copyright owner]"
  */
 
 package com.sun.jersey.api.model;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
@@ -26,30 +30,30 @@ import java.lang.reflect.Type;
  */
 public class Parameter {
     
-    public enum Source {ENTITY, QUERY, MATRIX, URI, COOKIE, HEADER, CONTEXT};
+    public enum Source {ENTITY, QUERY, MATRIX, PATH, COOKIE, HEADER, CONTEXT, UNKNOWN};
     
-    private Parameter.Source source;
-    private String sourceName;
-    private boolean encoded;
-    private String defaultValue;
-    private Type type;
-    private Class<?> clazz;
+    private final Annotation annotation;
+    private final Parameter.Source source;
+    private final String sourceName;
+    private final boolean encoded;
+    private final String defaultValue;
+    private final Type type;
+    private final Class<?> clazz;
     
-    public Parameter(Source source, String sourceName, Type type, Class<?> clazz) {
-        this(source, sourceName, type, clazz, false, null);
+    public Parameter(Annotation a, Source source, String sourceName, Type type, Class<?> clazz) {
+        this(a, source, sourceName, type, clazz, false, null);
     }
 
-    public Parameter(Source source, String sourceName, Type type, Class<?> clazz, boolean encoded) {
-        this(source, sourceName, type, clazz, encoded, null);
+    public Parameter(Annotation a, Source source, String sourceName, Type type, Class<?> clazz, boolean encoded) {
+        this(a, source, sourceName, type, clazz, encoded, null);
     }
 
-    public Parameter(Source source, String sourceName, Type type, Class<?> clazz, String defaultValue) {
-        this(source, sourceName, type, clazz, false, defaultValue);
+    public Parameter(Annotation a, Source source, String sourceName, Type type, Class<?> clazz, String defaultValue) {
+        this(a, source, sourceName, type, clazz, false, defaultValue);
     }
     
-    public Parameter(Source source, String sourceName, Type type, Class<?> clazz, boolean encoded, String defaultValue) {
-        // TODO: Check consistency, e.g. for query, matrix, uri and header params
-        // sourceName must not be null
+    public Parameter(Annotation a, Source source, String sourceName, Type type, Class<?> clazz, boolean encoded, String defaultValue) {
+        this.annotation = a;
         this.source = source;
         this.sourceName = sourceName;
         this.type = type;
@@ -58,12 +62,16 @@ public class Parameter {
         this.defaultValue = defaultValue;
     }
 
-    public String getSourceName() {
-        return sourceName;
+    public Annotation getAnnotation() {
+        return annotation;
     }
-
+    
     public Parameter.Source getSource() {
         return source;
+    }
+
+    public String getSourceName() {
+        return sourceName;
     }
 
     public boolean isEncoded() {
@@ -84,6 +92,5 @@ public class Parameter {
 
     public Type getParameterType() {
         return type;
-    }
-    
+    }    
 }

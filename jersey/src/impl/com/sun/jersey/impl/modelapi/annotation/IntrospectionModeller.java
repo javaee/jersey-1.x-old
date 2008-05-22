@@ -27,6 +27,7 @@ import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.model.AbstractSubResourceLocator;
 import com.sun.jersey.api.model.AbstractSubResourceMethod;
 import com.sun.jersey.api.model.Parameter;
+import com.sun.jersey.api.model.Parameter.Source;
 import com.sun.jersey.api.model.Parameterized;
 import com.sun.jersey.api.model.UriPathValue;
 import com.sun.jersey.impl.ImplMessages;
@@ -34,7 +35,6 @@ import com.sun.jersey.impl.model.MediaTypeHelper;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -354,7 +354,7 @@ public class IntrospectionModeller {
             }
 
             public Parameter.Source getSource() {
-                return Parameter.Source.URI;
+                return Parameter.Source.PATH;
             }
         });
         return Collections.unmodifiableMap(m);
@@ -375,12 +375,18 @@ public class IntrospectionModeller {
             return null;
         }
 
+        Annotation paramAnnotation = null;
         Parameter.Source paramSource = null;
         String paramName = null;
         boolean paramEncoded = isEncoded;
-
         String paramDefault = null;
-
+        
+        /**
+         * Create a parameter from the list of annotations.
+         * Unknown annotated parameters are also supported, and in such a
+         * cases the last unrecognized annotation is taken to be that
+         * associated with the parameter.
+         */
         for (Annotation annotation : annotations) {
             if (ANOT_HELPER_MAP.containsKey(annotation.annotationType())) {
                 ParamAnnotationHelper helper = ANOT_HELPER_MAP.get(annotation.annotationType());
@@ -389,23 +395,26 @@ public class IntrospectionModeller {
                         LOGGER.warning(ImplMessages.AMBIGUOUS_PARAMETER(nameForLogging, 
                                 Integer.toString(order)));
                     }
-                // TODO: throw an exception ?
                 }
+                paramAnnotation = annotation;
                 paramSource = helper.getSource();
                 paramName = helper.getValueOf(annotation);
             } else if (Encoded.class == annotation.annotationType()) {
                 paramEncoded = true;
             } else if (DefaultValue.class == annotation.annotationType()) {
                 paramDefault = ((DefaultValue) annotation).value();
-            }// TODO: should we really ignore unknown annotations ?
+            } else {
+                paramSource = Source.UNKNOWN;
+                paramAnnotation = annotation;               
+            }
         }
 
-        if (paramSource == null) {
+        if (paramAnnotation == null) {
             paramSource = Parameter.Source.ENTITY;
         }
 
-        return new Parameter(paramSource, paramName, paramType, paramClass, 
-                paramEncoded, paramDefault);
+        return new Parameter(paramAnnotation, paramSource, paramName, paramType, 
+                paramClass, paramEncoded, paramDefault);
     }
 
     private static void logNonPublicMethods(final Class resourceClass) {

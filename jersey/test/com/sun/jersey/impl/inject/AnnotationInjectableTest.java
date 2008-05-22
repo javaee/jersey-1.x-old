@@ -36,6 +36,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import com.sun.jersey.impl.AbstractResourceTester;
+import com.sun.jersey.spi.container.WebApplication;
 import com.sun.jersey.spi.inject.InjectableProvider;
 import com.sun.jersey.spi.inject.SingletonInjectable;
 import java.lang.reflect.Type;
@@ -48,15 +49,36 @@ import java.lang.reflect.Type;
  * @version $Id$
  */
 public class AnnotationInjectableTest extends AbstractResourceTester {
-
     
     public AnnotationInjectableTest(String testName) {
         super( testName );
     }
 
-    @Path("/")
-    public static class MyResource {
+    @Target({FIELD, PARAMETER, CONSTRUCTOR })
+    @Retention(RUNTIME)
+    @Documented
+    public static @interface MyAnnotation {
+    }
+    
+    public static class MyAnnotationInjectableProvider implements 
+            InjectableProvider<MyAnnotation, Type, SingletonInjectable<String>> {        
+        final String value;
         
+        public MyAnnotationInjectableProvider(String value) {
+            this.value = value;
+        }
+        
+        public SingletonInjectable<String> getInjectable(InjectableContext ic, MyAnnotation a, Type c) {
+            return new SingletonInjectable<String>() {
+                public String getValue() {
+                    return value;
+                }                    
+            };
+        }        
+    }
+    
+    @Path("/")
+    public static class FieldInjected {
         @MyAnnotation String injectedValue;
         
         @GET
@@ -65,29 +87,48 @@ public class AnnotationInjectableTest extends AbstractResourceTester {
         }                
     }
     
-    public void testInjected() throws IOException {
-        
-        final String value = "foo";
-        
-        initiateWebApplication(MyResource.class);
-        super.w.addInjectable(new InjectableProvider<MyAnnotation, Type, SingletonInjectable<String>>() {
-            public SingletonInjectable<String> getInjectable(InjectableContext ic, MyAnnotation a, Type c) {
-                return new SingletonInjectable<String>() {
-                    public String getValue() {
-                        return value;
-                    }                    
-                };
-            }            
-        });
-        
-        assertEquals( value, resource("/").get(String.class) );   
+    @Override
+    protected void initiate(WebApplication a) {
+        a.addInjectable(new MyAnnotationInjectableProvider("foo"));        
     }
     
-    @Target({FIELD, PARAMETER, CONSTRUCTOR })
-    @Retention(RUNTIME)
-    @Documented
-    public static @interface MyAnnotation {
-
+    public void testFieldInjected() throws IOException {                
+        initiateWebApplication(FieldInjected.class);
+        
+        assertEquals("foo", resource("/").get(String.class));   
     }
     
+    @Path("/")
+    public static class MethodInjected {
+        @GET
+        public String get(@MyAnnotation String injectedValue) {
+            return injectedValue;
+        }                
+    }
+    
+    public void testMethodInjected() throws IOException {                
+        initiateWebApplication(MethodInjected.class);
+                
+        assertEquals("foo", resource("/").get(String.class));   
+    }
+    
+    @Path("/")
+    public static class ConstructorInjected {
+        String injectedValue;
+        
+        public ConstructorInjected(@MyAnnotation String injectedValue) {
+            this.injectedValue = injectedValue;
+        }
+        
+        @GET
+        public String get() {
+            return injectedValue;
+        }                
+    }
+    
+    public void testConstructorInjected() throws IOException {                
+        initiateWebApplication(ConstructorInjected.class);
+                
+        assertEquals("foo", resource("/").get(String.class));   
+    }
 }

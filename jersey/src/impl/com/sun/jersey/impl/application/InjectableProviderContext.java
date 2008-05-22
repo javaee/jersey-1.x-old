@@ -22,25 +22,31 @@
 
 package com.sun.jersey.impl.application;
 
+import com.sun.jersey.api.model.Parameter;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.InjectableContext;
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 /**
  *
  * @author Paul.Sandoz@Sun.Com
  */
 public interface InjectableProviderContext {    
-    public <A extends Annotation, C> Injectable getInjectable(
+    <A extends Annotation, C> Injectable getInjectable(
             Class<? extends Annotation> ac,
             InjectableContext ic,
             A a,
             C c);
     
-    public <A extends Annotation, I extends Injectable, C> I getInjectable(
+    <A extends Annotation, I extends Injectable, C> I getInjectable(
             Class<? extends Annotation> ac,             
             InjectableContext ic,
             A a,
             C c,
             Class<? extends Injectable> iclass);
+    
+    Injectable getInjectable(Parameter p);
+    
+    List<Injectable> getInjectable(List<Parameter> ps);
 }

@@ -32,12 +32,13 @@ import com.sun.jersey.impl.model.method.ResourceHeadWrapperMethod;
 import com.sun.jersey.impl.model.method.ResourceHttpMethod;
 import com.sun.jersey.impl.model.method.ResourceHttpOptionsMethod;
 import com.sun.jersey.impl.model.method.ResourceMethod;
-import com.sun.jersey.impl.model.parameter.ParameterExtractorFactory;
 import com.sun.jersey.impl.uri.rules.HttpMethodRule;
 import com.sun.jersey.impl.uri.rules.SubLocatorRule;
 import com.sun.jersey.impl.uri.PathPattern;
 import com.sun.jersey.impl.uri.PathTemplate;
 import com.sun.jersey.api.uri.UriTemplate;
+import com.sun.jersey.impl.application.InjectableProviderContext;
+import com.sun.jersey.impl.application.ResourceMethodDispatcherFactory;
 import com.sun.jersey.impl.template.ViewableRule;
 import com.sun.jersey.impl.uri.rules.CombiningMatchingPatterns;
 import com.sun.jersey.impl.uri.rules.PatternRulePair;
@@ -77,6 +78,8 @@ public final class ResourceClass {
     public ResourceClass(ResourceConfig config,
             ComponentProvider provider,
             ResourceProviderFactory resolverFactory, 
+            ResourceMethodDispatcherFactory df,
+            InjectableProviderContext injectableContext,
             AbstractResource resource) {
         this.resource = resource;
 
@@ -88,12 +91,12 @@ public final class ResourceClass {
 
         RulesMap<UriRule> rulesMap = new RulesMap<UriRule>();
 
-        processSubResourceLocators(rulesMap);
+        processSubResourceLocators(injectableContext, rulesMap);
 
         final Map<PathPattern, ResourceMethodMap> patternMethodMap =
-                processSubResourceMethods();
+                processSubResourceMethods(df);
 
-        final ResourceMethodMap methodMap = processMethods();
+        final ResourceMethodMap methodMap = processMethods(df);
 
         // Create the rules for the sub-resource HTTP methods
         for (Map.Entry<PathPattern, ResourceMethodMap> e : patternMethodMap.entrySet()) {
@@ -169,7 +172,8 @@ public final class ResourceClass {
         rmm.put(rm);
     }
 
-    private void processSubResourceLocators(RulesMap<UriRule> rulesMap) {
+    private void processSubResourceLocators(InjectableProviderContext injectableContext,
+            RulesMap<UriRule> rulesMap) {
         for (final AbstractSubResourceLocator locator : resource.getSubResourceLocators()) {
             UriTemplate t = new PathTemplate(
                     locator.getUriPath().getValue(),
@@ -182,7 +186,7 @@ public final class ResourceClass {
             UriRule r = new SubLocatorRule(
                     t,
                     locator.getMethod(),
-                    ParameterExtractorFactory.createExtractorsForSublocator(locator));
+                    injectableContext.getInjectable(locator.getParameters()));
 
             rulesMap.put(p, 
                     new RightHandPathRule(
@@ -192,7 +196,8 @@ public final class ResourceClass {
         }
     }
 
-    private Map<PathPattern, ResourceMethodMap> processSubResourceMethods() {
+    private Map<PathPattern, ResourceMethodMap> processSubResourceMethods(
+            ResourceMethodDispatcherFactory df) {
         final Map<PathPattern, ResourceMethodMap> patternMethodMap =
                 new HashMap<PathPattern, ResourceMethodMap>();
         for (final AbstractSubResourceMethod method : this.resource.getSubResourceMethods()) {
@@ -203,7 +208,7 @@ public final class ResourceClass {
 
             PathPattern p = new PathPattern(t,  method.getUriPath().isLimited());
 
-            ResourceMethod rm = new ResourceHttpMethod(t, method);
+            ResourceMethod rm = new ResourceHttpMethod(df, t, method);
             addToPatternMethodMap(patternMethodMap, p, rm);
         }
 
@@ -215,10 +220,10 @@ public final class ResourceClass {
         return patternMethodMap;
     }
 
-    private ResourceMethodMap processMethods() {
+    private ResourceMethodMap processMethods(ResourceMethodDispatcherFactory df) {
         final ResourceMethodMap methodMap = new ResourceMethodMap();
         for (final AbstractResourceMethod resourceMethod : this.resource.getResourceMethods()) {
-            ResourceMethod rm = new ResourceHttpMethod(resourceMethod);
+            ResourceMethod rm = new ResourceHttpMethod(df, resourceMethod);
             methodMap.put(rm);
         }
 

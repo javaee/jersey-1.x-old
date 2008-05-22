@@ -20,15 +20,18 @@
  *     "Portions Copyrighted [year] [name of copyright owner]"
  */
 
-package com.sun.jersey.impl.model.method.dispatch;
+package com.sun.jersey.impl.application;
 
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.impl.ImplMessages;
+import com.sun.jersey.impl.model.method.dispatch.ResourceMethodDispatchProvider;
 import com.sun.jersey.spi.dispatch.RequestDispatcher;
 import com.sun.jersey.spi.service.ServiceFinder;
+import com.sun.jersey.spi.template.TemplateProcessor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -38,14 +41,21 @@ import java.util.logging.Logger;
 public final class ResourceMethodDispatcherFactory {
     private static final Logger LOGGER = Logger.getLogger(ResourceMethodDispatcherFactory.class.getName());
     
-    public static RequestDispatcher create(AbstractResourceMethod abstractResourceMethod) {
-        LinkedList<ResourceMethodDispatchProvider> rmdps = 
-                new LinkedList<ResourceMethodDispatchProvider>();
-        for (ResourceMethodDispatchProvider rmdp : ServiceFinder.find(
-                ResourceMethodDispatchProvider.class, true))
-            rmdps.addFirst(rmdp);
-        
-        for (ResourceMethodDispatchProvider rmdp : rmdps) {
+    private final Set<ResourceMethodDispatchProvider> dispatchers;
+    
+    public ResourceMethodDispatcherFactory(ComponentProviderCache componentProviderCache) {
+        dispatchers = componentProviderCache.getProvidersAndServices(
+                ResourceMethodDispatchProvider.class);
+    }
+
+    // TemplateContext
+    
+    public Set<ResourceMethodDispatchProvider> getDispatchers() {
+        return dispatchers;
+    }
+    
+    public RequestDispatcher getDispatcher(AbstractResourceMethod abstractResourceMethod) {
+        for (ResourceMethodDispatchProvider rmdp : dispatchers) {
             try {
                 RequestDispatcher d = rmdp.create(abstractResourceMethod);
                 if (d != null)

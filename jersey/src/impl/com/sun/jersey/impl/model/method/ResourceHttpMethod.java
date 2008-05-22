@@ -26,7 +26,7 @@ import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.uri.UriTemplate;
 import com.sun.jersey.impl.ImplMessages;
-import com.sun.jersey.impl.model.method.dispatch.ResourceMethodDispatcherFactory;
+import com.sun.jersey.impl.application.ResourceMethodDispatcherFactory;
 import java.lang.reflect.Method;
 
 /**
@@ -36,17 +36,20 @@ import java.lang.reflect.Method;
 public final class ResourceHttpMethod extends ResourceMethod {
     private final Method m;
 
-    public ResourceHttpMethod(AbstractResourceMethod method) {
-        this(UriTemplate.EMPTY, method);
+    public ResourceHttpMethod(ResourceMethodDispatcherFactory df, 
+            AbstractResourceMethod method) {
+        this(df, UriTemplate.EMPTY, method);
     }
     
-    public ResourceHttpMethod(UriTemplate template,
+    public ResourceHttpMethod(
+            ResourceMethodDispatcherFactory df,
+            UriTemplate template,
             AbstractResourceMethod method) {
         super(method.getHttpMethod(),
                 template,
                 method.getSupportedInputTypes(), 
                 method.getSupportedOutputTypes(),
-                ResourceMethodDispatcherFactory.create(method));
+                df.getDispatcher(method));
 
         this.m = method.getMethod();
         

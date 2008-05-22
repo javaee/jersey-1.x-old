@@ -23,7 +23,6 @@
 package com.sun.jersey.spi.inject;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
 
 /**
  * An injectable context providing more information for a injectable provider
@@ -32,15 +31,6 @@ import java.lang.reflect.AccessibleObject;
  * @author Paul.Sandoz@Sun.Com
  */
 public interface InjectableContext {
-    /**
-     * The nearest accessible object associated with the value to be injected.
-     * If the value is associated with a constructor or method parameter then
-     * the object is the constructor or method respectively.
-     *
-     * @return the accessible object.
-     */
-    AccessibleObject getAccessibleObject();
-
     /**
      * Get paritcular annoations associated with the value to be injected.
      * @param ca the class of the annotation.

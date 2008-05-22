@@ -153,7 +153,7 @@ public final class WadlGenerator {
             case MATRIX:
                 wadlParam.setStyle(ParamStyle.MATRIX);
                 break;
-            case URI:
+            case PATH:
                 wadlParam.setStyle(ParamStyle.TEMPLATE);
                 break;
             case HEADER:
@@ -199,7 +199,7 @@ public final class WadlGenerator {
             com.sun.research.ws.wadl.Method wadlMethod = generateMethod(wadlResourceParams, m);
             wadlResource.getMethodOrResource().add(wadlMethod);
         }
-        // add parameters that are associated with the resource URI template
+        // add parameters that are associated with the resource PATH template
         for (Param wadlParam : wadlResourceParams.values()) {
             wadlResource.getParam().add(wadlParam);
         }
@@ -224,7 +224,7 @@ public final class WadlGenerator {
             com.sun.research.ws.wadl.Method wadlMethod = generateMethod(wadlSubResourceParams, m);
             wadlSubResource.getMethodOrResource().add(wadlMethod);
         }
-        // add parameters that are associated with each sub-resource method URI template
+        // add parameters that are associated with each sub-resource method PATH template
         for (Map.Entry<String, Resource> e : wadlSubResources.entrySet()) {
             String template = e.getKey();
             Resource wadlSubResource = e.getValue();
@@ -266,7 +266,7 @@ public final class WadlGenerator {
             com.sun.research.ws.wadl.Method wadlMethod = generateMethod(wadlSubResourceParams, m);
             wadlResource.getMethodOrResource().add(wadlMethod);
         }
-        // add parameters that are associated with each sub-resource method URI template
+        // add parameters that are associated with each sub-resource method PATH template
         for (Param wadlParam : wadlSubResourceParams.values()) {
             wadlResource.getParam().add(wadlParam);
         }

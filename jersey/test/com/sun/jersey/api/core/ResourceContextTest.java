@@ -21,7 +21,6 @@
  */
 package com.sun.jersey.api.core;
 
-import com.sun.jersey.api.core.ResourceContext;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

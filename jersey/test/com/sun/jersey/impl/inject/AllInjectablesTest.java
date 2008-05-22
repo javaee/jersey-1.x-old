@@ -86,10 +86,20 @@ public class AllInjectablesTest extends AbstractResourceTester {
     @Path("/")
     public static class PerRequestContextConstructorParameterResource {
         public PerRequestContextConstructorParameterResource(
-                @Context HttpHeaders hs, 
-                @Context UriInfo ui, 
-                @Context Request r, 
+                @Context ResourceConfig rc,
+                @Context MessageBodyContext mbc,
+                @Context MessageBodyWorkers mbw,
+                @Context TemplateContext tc,
+                @Context HttpContext hca,
+                @Context HttpHeaders hs,
+                @Context UriInfo ui,
+                @Context Request r,
                 @Context SecurityContext sc) {
+            assertNotNull(rc);
+            assertNotNull(mbc);
+            assertNotNull(mbw);
+            assertNotNull(tc);
+            assertNotNull(hca);
             assertNotNull(hs);
             assertNotNull(ui);
             assertNotNull(r);
@@ -104,10 +114,20 @@ public class AllInjectablesTest extends AbstractResourceTester {
     public static class PerRequestContextMethodParameterResource {
         @GET
         public String get(
-                @Context HttpHeaders hs, 
-                @Context UriInfo ui, 
-                @Context Request r, 
+                @Context ResourceConfig rc,
+                @Context MessageBodyContext mbc,
+                @Context MessageBodyWorkers mbw,
+                @Context TemplateContext tc,
+                @Context HttpContext hca,
+                @Context HttpHeaders hs,
+                @Context UriInfo ui,
+                @Context Request r,
                 @Context SecurityContext sc) {
+            assertNotNull(rc);
+            assertNotNull(mbc);
+            assertNotNull(mbw);
+            assertNotNull(tc);
+            assertNotNull(hca);
             assertNotNull(hs);
             assertNotNull(ui);
             assertNotNull(r);

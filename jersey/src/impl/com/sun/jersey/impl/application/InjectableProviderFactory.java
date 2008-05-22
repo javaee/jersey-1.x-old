@@ -27,7 +27,7 @@ import com.sun.jersey.impl.model.ReflectionHelper;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.InjectableContext;
 import com.sun.jersey.spi.inject.InjectableProvider;
-import com.sun.jersey.impl.application.InjectableProviderContext;
+import com.sun.jersey.spi.inject.PerRequestInjectable;
 import com.sun.jersey.spi.inject.SingletonInjectable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -36,8 +36,11 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -63,7 +66,8 @@ public final class InjectableProviderFactory implements InjectableProviderContex
         }
     }
     
-    Set<MetaInjectableProvider> ips = new LinkedHashSet<MetaInjectableProvider>();
+    private Map<Class<? extends Annotation>, LinkedList<MetaInjectableProvider>> ipm = 
+            new HashMap<Class<? extends Annotation>, LinkedList<MetaInjectableProvider>>();
     
     public void add(InjectableProvider ip) {
         Class<?> c = ip.getClass();
@@ -71,10 +75,21 @@ public final class InjectableProviderFactory implements InjectableProviderContex
         if (args != null) {
             MetaInjectableProvider mip = new MetaInjectableProvider(ip, 
                     (Class)args[0], (Class)args[1], (Class)args[2]);
-            ips.add(mip);
+            
+            // TODO change to add first
+            getList(mip.ac).add(mip);
         } else {
             // TODO throw exception or log error            
         }
+    }
+
+    private LinkedList<MetaInjectableProvider> getList(Class<? extends Annotation> c) {
+        LinkedList<MetaInjectableProvider> l = ipm.get(c);
+        if (l == null) {
+            l = new LinkedList<MetaInjectableProvider>();
+            ipm.put(c, l);
+        }
+        return l;
     }
     
     private MetaInjectableProvider getMeta(InjectableProvider ip) {
@@ -131,30 +146,36 @@ public final class InjectableProviderFactory implements InjectableProviderContex
             return t;
     }
     
-    private Set<MetaInjectableProvider> findInjectableProviders(
+    private List<MetaInjectableProvider> findInjectableProviders(
             Class<? extends Annotation> ac, 
             Class<? extends Injectable> ic, 
             Class<?> cc) {
-        Set<MetaInjectableProvider> subips = new LinkedHashSet<MetaInjectableProvider>();
-        for (MetaInjectableProvider i : ips)
-            if (ac == i.ac && ic.isAssignableFrom(i.ic) && cc == i.cc)
-                subips.add(i);
-            
+        List<MetaInjectableProvider> subips = new ArrayList<MetaInjectableProvider>();        
+        for (MetaInjectableProvider i : getList(ac)) {
+            if (ic.isAssignableFrom(i.ic)) {
+                if (i.cc.isAssignableFrom(cc)) {
+                    subips.add(i);                        
+                }
+            }
+        }
+        
         return subips;    
     }
     
-    private Set<MetaInjectableProvider> findInjectableProviders(
+    private List<MetaInjectableProvider> findInjectableProviders(
             Class<? extends Annotation> ac, 
             Class<?> cc) {
-        Set<MetaInjectableProvider> subips = new LinkedHashSet<MetaInjectableProvider>();
-        for (MetaInjectableProvider i : ips) {
-            if (ac == i.ac && i.cc.isAssignableFrom(cc)) {
-                subips.add(i);
+        List<MetaInjectableProvider> subips = new ArrayList<MetaInjectableProvider>();
+        for (MetaInjectableProvider i : getList(ac)) {
+            if (i.cc.isAssignableFrom(cc)) {
+                subips.add(i);                   
             }
         }
             
         return subips;    
     }
+    
+    // InjectableProviderContext
     
     public <A extends Annotation, C> Injectable getInjectable(
             Class<? extends Annotation> ac,
@@ -182,7 +203,46 @@ public final class InjectableProviderFactory implements InjectableProviderContex
         }
         return null;
     }
+        
+    public Injectable getInjectable(Parameter p) {
+        if (p.getAnnotation() == null) return null;
+        
+        InjectableContext ic = new ParameterIC(p);
+        
+        // Find a per request injectable with Parameter
+        Injectable i = getInjectable(p.getAnnotation().annotationType(), ic, p.getAnnotation(), 
+                p, PerRequestInjectable.class);
+        if (i != null) return i;
+        
+        // Find a singleton or per request injetable with parameter Type
+        return getInjectable(p.getAnnotation().annotationType(), ic, p.getAnnotation(), 
+                p.getParameterType());        
+    }
     
+    public List<Injectable> getInjectable(List<Parameter> ps) {
+        List<Injectable> is = new ArrayList<Injectable>();
+        for (Parameter p : ps)
+            is.add(getInjectable(p));        
+        return is;
+    }
+        
+    private static final class ParameterIC implements InjectableContext {
+        private final Parameter p;
+
+        ParameterIC(Parameter p) {
+            this.p = p;
+        }
+        
+        public <A extends Annotation> A getAnnotation(Class<A> ca) {
+            return p.getParameterClass().getAnnotation(ca);
+        }
+
+        public Annotation[] getAnnotations() {
+            return p.getClass().getAnnotations();
+        }
+    }
+    
+    //
     
     public void injectResources(final Object o) {
         Class oClass = o.getClass();

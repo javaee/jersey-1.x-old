@@ -203,7 +203,7 @@ public class IntrospectionModellerTest extends TestCase {
 //        }
         assertEquals("/subres-locator/{p1}", locator.getUriPath().getValue());
         assertEquals(3, locator.getParameters().size());
-        assertEquals(Parameter.Source.URI, locator.getParameters().get(0).getSource());
+        assertEquals(Parameter.Source.PATH, locator.getParameters().get(0).getSource());
         assertEquals("p1", locator.getParameters().get(0).getSourceName());
         assertEquals(String.class, locator.getParameters().get(0).getParameterClass());
         assertEquals(String.class, locator.getParameters().get(0).getParameterType());
@@ -240,7 +240,7 @@ public class IntrospectionModellerTest extends TestCase {
         assertEquals("/with-params/{one}", subResMethod2.getUriPath().getValue());
         assertEquals("GET", subResMethod2.getHttpMethod());
         assertEquals(1, subResMethod2.getParameters().size());
-        assertEquals(Parameter.Source.URI, subResMethod2.getParameters().get(0).getSource());
+        assertEquals(Parameter.Source.PATH, subResMethod2.getParameters().get(0).getSource());
         assertEquals("one", subResMethod2.getParameters().get(0).getSourceName());
         assertEquals("text/plain", subResMethod2.getSupportedOutputTypes().get(0).toString());
     }

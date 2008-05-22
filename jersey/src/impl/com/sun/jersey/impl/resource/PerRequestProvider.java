@@ -26,25 +26,30 @@ import com.sun.jersey.api.container.ContainerException;
 import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.model.AbstractResource;
 import com.sun.jersey.api.model.AbstractResourceConstructor;
-import com.sun.jersey.impl.model.parameter.ParameterExtractor;
-import com.sun.jersey.impl.model.parameter.ParameterExtractorFactory;
+import com.sun.jersey.impl.application.InjectableProviderContext;
+import com.sun.jersey.spi.inject.Injectable;
+import com.sun.jersey.spi.inject.PerRequestInjectable;
+import com.sun.jersey.spi.inject.SingletonInjectable;
 import com.sun.jersey.spi.resource.ResourceProvider;
 import com.sun.jersey.spi.service.ComponentProvider;
 import com.sun.jersey.spi.service.ComponentProvider.Scope;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import javax.ws.rs.core.Context;
 
 /**
  *
  * @author mh124079
  */
 public final class PerRequestProvider implements ResourceProvider {
+    @Context InjectableProviderContext ipc;
 
     private Class<?> c;
     
     private Constructor<?> constructor;
     
-    private ParameterExtractor[] extractors;
+    private List<Injectable> is;
     
     public void init(ComponentProvider provider,
             AbstractResource abstractResource) {
@@ -54,18 +59,17 @@ public final class PerRequestProvider implements ResourceProvider {
         // instead of just picking up the first one
         if (abstractResource.getConstructors().isEmpty()) {
             this.constructor = null;
-            this.extractors = null;
+            this.is = null;
         } else {
             AbstractResourceConstructor abstractConstructor = 
                     abstractResource.getConstructors().get(0);
             
             this.constructor = abstractConstructor.getCtor();
             if (this.constructor.getParameterTypes().length > 0) {
-                this.extractors = ParameterExtractorFactory.
-                        createExtractorsForConstructor(abstractConstructor);
+                this.is = ipc.getInjectable(abstractConstructor.getParameters());
             } else {
                 this.constructor = null;
-                this.extractors = null;                
+                this.is = null;                
             }
         }
     }
@@ -75,15 +79,20 @@ public final class PerRequestProvider implements ResourceProvider {
             if (constructor == null) {
                 return provider.getInstance(Scope.ApplicationDefined, c);
             } else {
-                Object[] values = new Object[extractors.length];
-                for (int i = 0; i < extractors.length; i++) {
-                    if (extractors[i] == null)
-                        values[i] = null;
-                    else
-                        values[i] = extractors[i].extract(context);
+                final Object[] params = new Object[is.size()];
+                int index = 0;
+                for (Injectable i : is) {
+                    if (i instanceof SingletonInjectable) {
+                        params[index++] = ((SingletonInjectable)i).getValue();                    
+                    } else if (i instanceof PerRequestInjectable) {
+                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
+                    } else {
+                        params[index++] = null;
+                    }
                 }
+                
                 return provider.getInstance(Scope.ApplicationDefined, 
-                    constructor, values);
+                    constructor, params);
             }
         } catch (InstantiationException ex) {
             throw new ContainerException("Unable to create resource", ex);
