@@ -668,9 +668,18 @@ public final class WebApplicationImpl implements WebApplication {
         MediaType accept = null;
         for (Map.Entry<String, MediaType> e : resourceConfig.getMediaTypeMappings().entrySet()) {
             int i = path.indexOf(e.getKey(), si);
-            if (i > 0 && path.charAt(i - 1) == '.') {
-                accept = e.getValue();
-                path.delete(i - 1, i + e.getKey().length());
+            if (i > 0 && (path.charAt(i - 1) == '.')) {
+                int lengthWithExt = i + e.getKey().length();
+                if (lengthWithExt == path.length()) {
+                    accept = e.getValue();
+                    path.delete(i - 1, lengthWithExt);
+                } else {
+                    char charAfterExt = path.charAt(lengthWithExt);
+                    if (('/' == charAfterExt) || ('.' == charAfterExt)) { 
+                        accept = e.getValue();
+                        path.delete(i - 1, lengthWithExt);
+                    }
+                }
             }
         }
         if (accept != null) {

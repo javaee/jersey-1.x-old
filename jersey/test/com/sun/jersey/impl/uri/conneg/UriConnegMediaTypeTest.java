@@ -51,6 +51,12 @@ public class UriConnegMediaTypeTest extends AbstractResourceTester {
         }
         
         @GET
+        @ProduceMime("application/foot")
+        public String doGetFoot() {
+            return "foot";
+        }
+
+        @GET
         @ProduceMime("application/bar")
         public String doGetBar() {
             return "bar";
@@ -130,6 +136,13 @@ public class UriConnegMediaTypeTest extends AbstractResourceTester {
         
         @Path("abc")
         @GET
+        @ProduceMime("application/foot")
+        public String doGetFoot() {
+            return "foot";
+        }
+
+        @Path("abc")
+        @GET
         @ProduceMime("application/bar")
         public String doGetBar() {
             return "bar";
@@ -146,6 +159,7 @@ public class UriConnegMediaTypeTest extends AbstractResourceTester {
         ResourceConfig rc = new DefaultResourceConfig(r);
         rc.getMediaTypeMappings().put("foo", MediaType.valueOf("application/foo"));
         rc.getMediaTypeMappings().put("bar", MediaType.valueOf("application/bar"));
+        rc.getMediaTypeMappings().put("foot", MediaType.valueOf("application/foot"));
         initiateWebApplication(rc);        
     }
     
@@ -163,12 +177,18 @@ public class UriConnegMediaTypeTest extends AbstractResourceTester {
         String s = r.path(path + ".foo" + terminate).get(String.class);
         assertEquals("foo", s);
         
+        s = r.path(path + ".foot" + terminate).get(String.class);
+        assertEquals("foot", s);
+
         s = r.path(path + ".bar" + terminate).get(String.class);
         assertEquals("bar", s);  
         
         s = r.path(path + terminate).accept("application/foo").get(String.class);
         assertEquals("foo", s);
         
+        s = r.path(path + terminate).accept("application/foot").get(String.class);
+        assertEquals("foot", s);
+
         s = r.path(path + terminate).accept("application/foo;q=0.1").get(String.class);
         assertEquals("foo", s);        
     }
