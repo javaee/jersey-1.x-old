@@ -82,13 +82,7 @@ public final class PerRequestProvider implements ResourceProvider {
                 final Object[] params = new Object[is.size()];
                 int index = 0;
                 for (Injectable i : is) {
-                    if (i instanceof SingletonInjectable) {
-                        params[index++] = ((SingletonInjectable)i).getValue();                    
-                    } else if (i instanceof PerRequestInjectable) {
-                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
-                    } else {
-                        params[index++] = null;
-                    }
+                    params[index++] = (i != null) ? i.getValue(context) : null;
                 }
                 
                 return provider.getInstance(Scope.ApplicationDefined, 

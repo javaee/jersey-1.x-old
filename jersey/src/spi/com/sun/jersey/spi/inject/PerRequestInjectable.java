@@ -22,8 +22,6 @@
 
 package com.sun.jersey.spi.inject;
 
-import com.sun.jersey.api.core.HttpContext;
-
 /**
  * An injectable to get values that are dependent on the context
  * of the HTTP request.
@@ -31,11 +29,5 @@ import com.sun.jersey.api.core.HttpContext;
  * @param T the type of the value to be injected
  * @author Paul.Sandoz@Sun.Com
  */
-public interface PerRequestInjectable<T> extends Injectable {
-    
-    /**
-     * @param context the HTTP context
-     * @return the value to be injected..
-     */
-    T getValue(HttpContext context);
+public interface PerRequestInjectable<T> extends Injectable<T> {
 }

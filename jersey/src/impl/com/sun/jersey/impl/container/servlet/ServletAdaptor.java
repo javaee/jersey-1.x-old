@@ -23,6 +23,7 @@
 package com.sun.jersey.impl.container.servlet;
 
 import com.sun.jersey.api.container.ContainerException;
+import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.spi.container.WebApplication;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
@@ -101,7 +102,7 @@ public class ServletAdaptor extends ServletContainer {
                         emfHandler);
                 
                 return new SingletonInjectable<EntityManagerFactory>() {
-                    public EntityManagerFactory getValue() {
+                    public EntityManagerFactory getValue(HttpContext c) {
                         return emf;
                     }                    
                 };

@@ -85,13 +85,7 @@ public class EntityParamDispatchProvider implements ResourceMethodDispatchProvid
             try {
                 int index = 0;
                 for (Injectable i : is) {
-                    if (i instanceof SingletonInjectable) {
-                        params[index++] = ((SingletonInjectable)i).getValue();                    
-                    } else if (i instanceof PerRequestInjectable) {
-                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
-                    } else {
-                        params[index++] = null;
-                    }
+                    params[index++] = i.getValue(context);                        
                 }
                 return params;
             } catch (WebApplicationException e) {

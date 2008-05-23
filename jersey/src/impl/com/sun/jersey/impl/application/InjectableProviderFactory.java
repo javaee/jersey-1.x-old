@@ -68,7 +68,7 @@ public final class InjectableProviderFactory implements InjectableProviderContex
     
     private Map<Class<? extends Annotation>, LinkedList<MetaInjectableProvider>> ipm = 
             new HashMap<Class<? extends Annotation>, LinkedList<MetaInjectableProvider>>();
-    
+        
     public void add(InjectableProvider ip) {
         Class<?> c = ip.getClass();
         Type[] args = getMetaArguments(ip.getClass());
@@ -83,6 +83,13 @@ public final class InjectableProviderFactory implements InjectableProviderContex
         }
     }
 
+    public void configure(ComponentProviderCache componentProviderCache) {
+        for (InjectableProvider ip : 
+            componentProviderCache.getProvidersAndServices(InjectableProvider.class)) {
+            add(ip);
+        }
+    }
+    
     private LinkedList<MetaInjectableProvider> getList(Class<? extends Annotation> c) {
         LinkedList<MetaInjectableProvider> l = ipm.get(c);
         if (l == null) {
@@ -257,7 +264,7 @@ public final class InjectableProviderFactory implements InjectableProviderContex
                     if (i != null && i instanceof SingletonInjectable) {
                         SingletonInjectable si = (SingletonInjectable)i;
                         
-                        Object v = si.getValue();
+                        Object v = si.getValue(null);
                         
                         setFieldValue(o, f, v);
                     }

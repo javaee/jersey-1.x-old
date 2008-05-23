@@ -22,10 +22,21 @@
 
 package com.sun.jersey.spi.inject;
 
+import com.sun.jersey.api.core.HttpContext;
+
 /**
  * The base interface for something that is injectable.
  * 
+ * @param T the type of the value to be injected
  * @author Paul.Sandoz@Sun.Com
  */
-public interface Injectable {
+public interface Injectable<T> {
+    /**
+     * Get the injectable value.
+     * 
+     * @param context the HTTP context, may be null if no context is available
+     *        for the scope of injection.
+     * @return the injectable value
+     */
+    T getValue(HttpContext context);
 }

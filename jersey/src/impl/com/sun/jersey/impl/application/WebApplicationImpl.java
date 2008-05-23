@@ -181,7 +181,7 @@ public final class WebApplicationImpl implements WebApplication {
                 final Object o = m.get(c);
                 if (o != null) {
                     return new SingletonInjectable() {
-                        public Object getValue() {
+                        public Object getValue(HttpContext c) {
                             return o;
                         }
                     };
@@ -406,7 +406,7 @@ public final class WebApplicationImpl implements WebApplication {
                             return null;
                         
                         return new SingletonInjectable<Object>() {
-                            public Object getValue() {
+                            public Object getValue(HttpContext context) {
                                 try {
                                     return provider.getInstance(Scope.Undefined, (Class)c);
                                 } catch (Exception e) {
@@ -428,7 +428,16 @@ public final class WebApplicationImpl implements WebApplication {
         injectableFactory.add(new ContextInjectableProvider<ResourceContext>(
                 ResourceContext.class, resourceContext));
         
+        injectableFactory.configure(cpc);
         
+        // Add per-request-based injectable providers
+        injectableFactory.add(new CookieParamInjectableProvider());
+        injectableFactory.add(new HeaderParamInjectableProvider());
+        injectableFactory.add(new HttpContextInjectableProvider());
+        injectableFactory.add(new MatrixParamInjectableProvider());
+        injectableFactory.add(new PathParamInjectableProvider());
+        injectableFactory.add(new QueryParamInjectableProvider());
+
         // Obtain all context resolvers
         ContextResolverFactory crf = new ContextResolverFactory(cpc, injectableFactory);
 

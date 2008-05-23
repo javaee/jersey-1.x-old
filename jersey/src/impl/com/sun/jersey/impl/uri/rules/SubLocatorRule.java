@@ -86,13 +86,7 @@ public final class SubLocatorRule extends BaseRule {
                 final Object[] params = new Object[is.size()];
                 int index = 0;
                 for (Injectable i : is) {
-                    if (i instanceof SingletonInjectable) {
-                        params[index++] = ((SingletonInjectable)i).getValue();                    
-                    } else if (i instanceof PerRequestInjectable) {
-                        params[index++] = ((PerRequestInjectable)i).getValue(context);                        
-                    } else {
-                        params[index++] = null;
-                    }
+                    params[index++] = i.getValue(context);                        
                 }
                 
                 return m.invoke(resource, params);

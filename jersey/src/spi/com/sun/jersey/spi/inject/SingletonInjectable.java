@@ -29,9 +29,5 @@ package com.sun.jersey.spi.inject;
  * @param T The type of the value to be injected
  * @author Paul.Sandoz@Sun.Com
  */
-public interface SingletonInjectable<T> extends Injectable {
-    /**
-     * @return the value to be injected.
-     */
-    T getValue();
+public interface SingletonInjectable<T> extends Injectable<T> {
 }
