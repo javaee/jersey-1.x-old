@@ -439,7 +439,7 @@ public final class WebApplicationImpl implements WebApplication {
         injectableFactory.add(new QueryParamInjectableProvider());
 
         // Obtain all context resolvers
-        ContextResolverFactory crf = new ContextResolverFactory(cpc, injectableFactory);
+        new ContextResolverFactory(cpc, injectableFactory);
 
         // Obtain all the templates
         this.templateContext = new TemplateFactory(cpc);

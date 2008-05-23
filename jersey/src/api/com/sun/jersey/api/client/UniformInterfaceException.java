@@ -30,7 +30,7 @@ package com.sun.jersey.api.client;
  * @author Paul.Sandoz@Sun.Com
  */
 public class UniformInterfaceException extends RuntimeException {
-    private final ClientResponse r;
+    transient private final ClientResponse r;
     
     public UniformInterfaceException(ClientResponse r) {
         this.r = r;

@@ -191,7 +191,7 @@ public class Client extends Filterable implements ClientHandler {
                 config.getProviderClasses());
 
         // Obtain all context resolvers
-        ContextResolverFactory crf = new ContextResolverFactory(cpc, injectableFactory);
+        new ContextResolverFactory(cpc, injectableFactory);
 
         // Obtain all message body readers/writers
         this.bodyContext = new MessageBodyFactory(cpc);

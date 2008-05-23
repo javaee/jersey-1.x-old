@@ -70,7 +70,6 @@ public final class InjectableProviderFactory implements InjectableProviderContex
             new HashMap<Class<? extends Annotation>, LinkedList<MetaInjectableProvider>>();
         
     public void add(InjectableProvider ip) {
-        Class<?> c = ip.getClass();
         Type[] args = getMetaArguments(ip.getClass());
         if (args != null) {
             MetaInjectableProvider mip = new MetaInjectableProvider(ip, 
@@ -100,7 +99,6 @@ public final class InjectableProviderFactory implements InjectableProviderContex
     }
     
     private MetaInjectableProvider getMeta(InjectableProvider ip) {
-        Class<?> c = ip.getClass();
         Type[] args = getMetaArguments(ip.getClass());
         if (args != null)
             return new MetaInjectableProvider(ip, (Class)args[0], (Class)args[1], (Class)args[2]);
@@ -253,7 +251,7 @@ public final class InjectableProviderFactory implements InjectableProviderContex
     
     public void injectResources(final Object o) {
         Class oClass = o.getClass();
-        while (oClass != null) {
+        while (oClass != Object.class) {
             for (final Field f : oClass.getDeclaredFields()) {                
                 if (getFieldValue(o, f) != null) continue;
                 
