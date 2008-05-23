@@ -73,11 +73,15 @@ public final class ResourceClass {
     
     public final AbstractResource resource;
     
-    public final ResourceProvider resolver;
+    public final ResourceClassInjector injector;
     
-    public ResourceClass(ResourceConfig config,
+    public ResourceProvider provider;
+    
+    public ResourceClass(
+            ResourceConfig config,
             ComponentProvider provider,
-            ResourceProviderFactory resolverFactory, 
+            ComponentProvider resourceProvider,
+            ResourceProviderFactory providerFactory, 
             ResourceMethodDispatcherFactory df,
             InjectableProviderContext injectableContext,
             AbstractResource resource) {
@@ -85,10 +89,8 @@ public final class ResourceClass {
 
         this.config = config;
 
-        this.resolver = resolverFactory.createProvider(
-                provider, resource, 
-                config.getFeatures(), config.getProperties());
-
+        this.injector = new ResourceClassInjector(injectableContext, resource);
+        
         RulesMap<UriRule> rulesMap = new RulesMap<UriRule>();
 
         processSubResourceLocators(injectableContext, rulesMap);
@@ -156,6 +158,15 @@ public final class ResourceClass {
         this.rules = combiningRules;
     }
         
+    public void init(
+            ComponentProvider provider,
+            ComponentProvider resourceProvider,
+            ResourceProviderFactory providerFactory) {
+        this.provider = providerFactory.createProvider(
+                provider, resourceProvider, 
+                resource, config.getFeatures(), config.getProperties());  
+    }
+    
     public UriRules<UriRule> getRules() {
         return rules;
     }

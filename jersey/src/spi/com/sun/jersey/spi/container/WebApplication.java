@@ -87,13 +87,22 @@ public interface WebApplication {
 
     /**
      * Get the component provider that can be used for instantiating
-     * components.
+     * components other than resource classes.
      * 
      * @return the component provider. The return value is 
      * undefined before the web applicaiton is initialized.
      */
     ComponentProvider getComponentProvider();
 
+    /**
+     * Get the component provider that can be used for instantiating
+     * resource classes.
+     * 
+     * @return the component provider. The return value is 
+     * undefined before the web applicaiton is initialized.
+     */
+    ComponentProvider getResourceComponentProvider();
+    
     /**
      * Add an injectable provider that provides injectable values.
      * 

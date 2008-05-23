@@ -59,6 +59,7 @@ public class ResourceProviderFactory {
      * will be chosen.
      * 
      * @param provider the component provider
+     * @param resourceProvider the component provider for resource classes
      * @param resource the abstract resource for the provider.
      * @param resourceFeatures the resource features
      * @param resourceProperties the resource properties
@@ -68,6 +69,7 @@ public class ResourceProviderFactory {
      */
     public ResourceProvider createProvider(
             ComponentProvider provider,
+            ComponentProvider resourceProvider,
             AbstractResource resource,
             Map<String, Boolean> resourceFeatures,
             Map<String, Object> resourceProperties) {
@@ -112,7 +114,7 @@ public class ResourceProviderFactory {
         try {
             ResourceProvider r = (ResourceProvider)provider.
                     getInstance(ComponentProvider.Scope.ApplicationDefined, providerClass);
-            r.init(provider, resource);
+            r.init(resourceProvider, resource);
             return r;
         } catch (IllegalAccessException ex) {
             throw new ContainerException("Unable to create resource provider", ex);

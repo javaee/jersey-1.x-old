@@ -138,6 +138,8 @@ public final class WebApplicationImpl implements WebApplication {
     
     private ComponentProvider provider;
     
+    private ComponentProvider resourceProvider;
+    
     private TemplateContext templateContext;
     
     private ResourceMethodDispatcherFactory dispatcherFactory;
@@ -208,9 +210,9 @@ public final class WebApplicationImpl implements WebApplication {
         assert c != null;
 
         // Try the non-blocking read, the most common opertaion
-        ResourceClass rmc = metaClassMap.get(c);
-        if (rmc != null) {
-            return rmc;
+        ResourceClass rc = metaClassMap.get(c);
+        if (rc != null) {
+            return rc;
         }
 
         // ResourceClass is not present use a synchronized block
@@ -219,20 +221,24 @@ public final class WebApplicationImpl implements WebApplication {
         synchronized (metaClassMap) {
             // One or more threads may have been blocking on the synchronized
             // block, re-check the map
-            rmc = metaClassMap.get(c);
-            if (rmc != null) {
-                return rmc;
+            rc = metaClassMap.get(c);
+            if (rc != null) {
+                return rc;
             }
 
-            rmc = newResourceClass(getAbstractResource(c));
-            metaClassMap.put(c, rmc);
-            return rmc;
+            rc = newResourceClass(getAbstractResource(c));
+            metaClassMap.put(c, rc);
         }
+        rc.init(getComponentProvider(), getResourceComponentProvider(), 
+                resolverFactory);
+        return rc;
     }
 
-    public ResourceClass getResourceClass(AbstractResource ar) {
+    private ResourceClass getResourceClass(AbstractResource ar) {
         ResourceClass rc = newResourceClass(ar);
         metaClassMap.put(ar.getResourceClass(), rc);
+        rc.init(getComponentProvider(), getResourceComponentProvider(), 
+                resolverFactory);
         return rc;
     }
 
@@ -258,7 +264,8 @@ public final class WebApplicationImpl implements WebApplication {
             throw new ContainerException(ImplMessages.FATAL_ISSUES_FOUND_AT_RES_CLASS(ar.getResourceClass().getName()));
         }
         return new ResourceClass(resourceConfig,
-                getComponentProvider(), resolverFactory, dispatcherFactory,
+                getComponentProvider(), getResourceComponentProvider(), 
+                resolverFactory, dispatcherFactory,
                 injectableFactory, ar);
     }
 
@@ -274,6 +281,11 @@ public final class WebApplicationImpl implements WebApplication {
         injectableFactory.injectResources(o);
     }
 
+    private void injectResourcesForResourceClass(Object o) {
+        ResourceClass rc = getResourceClass(o.getClass());
+        rc.injector.injectSingleton(o);
+    }
+    
     private final class AdaptingComponentProvider implements ComponentProvider {
 
         private final ComponentProvider cp;
@@ -322,6 +334,54 @@ public final class WebApplicationImpl implements WebApplication {
         }
     }
 
+    private final class AdaptingResourceComponentProvider implements ComponentProvider {
+
+        private final ComponentProvider cp;
+
+        AdaptingResourceComponentProvider(ComponentProvider cp) {
+            this.cp = cp;
+        }
+
+        public ComponentProvider getAdaptedComponentProvider() {
+            return cp;
+        }
+
+        //
+        public <T> T getInstance(Scope scope, Class<T> c)
+                throws InstantiationException, IllegalAccessException {
+            T o = cp.getInstance(scope, c);
+            if (o == null) {
+                o = c.newInstance();
+                injectResourcesForResourceClass(o);
+            } else {
+                injectResourcesForResourceClass(cp.getInjectableInstance(o));
+            }
+            return o;
+        }
+
+        public <T> T getInstance(Scope scope, Constructor<T> contructor, Object[] parameters)
+                throws InstantiationException, IllegalArgumentException,
+                IllegalAccessException, InvocationTargetException {
+            T o = cp.getInstance(scope, contructor, parameters);
+            if (o == null) {
+                o = contructor.newInstance(parameters);
+                injectResourcesForResourceClass(o);
+            } else {
+                injectResourcesForResourceClass(cp.getInjectableInstance(o));
+            }
+            return o;
+        }
+
+        public <T> T getInjectableInstance(T instance) {
+            return cp.getInjectableInstance(instance);
+        }
+
+        public void inject(Object instance) {
+            cp.inject(instance);
+            injectResourcesForResourceClass(cp.getInjectableInstance(instance));
+        }
+    }
+    
     private final class DefaultComponentProvider implements ComponentProvider {
 
         public <T> T getInstance(Scope scope, Class<T> c)
@@ -348,6 +408,32 @@ public final class WebApplicationImpl implements WebApplication {
         }
     }
 
+    private final class DefaultResourceComponentProvider implements ComponentProvider {
+
+        public <T> T getInstance(Scope scope, Class<T> c)
+                throws InstantiationException, IllegalAccessException {
+            final T o = c.newInstance();
+            injectResourcesForResourceClass(o);
+            return o;
+        }
+
+        public <T> T getInstance(Scope scope, Constructor<T> contructor, Object[] parameters)
+                throws InstantiationException, IllegalArgumentException,
+                IllegalAccessException, InvocationTargetException {
+            final T o = contructor.newInstance(parameters);
+            injectResourcesForResourceClass(o);
+            return o;
+        }
+
+        public <T> T getInjectableInstance(T instance) {
+            return instance;
+        }
+
+        public void inject(Object instance) {
+            injectResourcesForResourceClass(instance);
+        }
+    }
+    
     // WebApplication
     
     public void initiate(ResourceConfig resourceConfig) {
@@ -371,11 +457,17 @@ public final class WebApplicationImpl implements WebApplication {
         }
         this.initiated = true;
 
-        // Set up the component provider
+        // Set up the component provider to be
+        // used with non-resource class components
         this.provider = (_provider == null)
                 ? new DefaultComponentProvider()
                 : new AdaptingComponentProvider(_provider);
         
+        // Set up the resource component provider to be
+        // used with resource class components
+        this.resourceProvider = (_provider == null)
+                ? new DefaultResourceComponentProvider()
+                : new AdaptingResourceComponentProvider(_provider);
         
         // Check the resource configuration
         this.resourceConfig = resourceConfig;
@@ -388,7 +480,7 @@ public final class WebApplicationImpl implements WebApplication {
                     LOGGER.severe("No resource class found for class " + c.getName());
                     throw new ContainerException("No resource class found for class " + c.getName());
                 }
-                final Object instance = rc.resolver.getInstance(provider, context);
+                final Object instance = rc.provider.getInstance(resourceProvider, context);
                 return instance != null ? c.cast(instance) : null;
             }
         };
@@ -480,6 +572,10 @@ public final class WebApplicationImpl implements WebApplication {
         return provider;
     }
 
+    public ComponentProvider getResourceComponentProvider() {
+        return resourceProvider;
+    }
+    
     public void handleRequest(ContainerRequest request, ContainerResponse response) {
         final WebApplicationContext localContext = new WebApplicationContext(this, request, response);
         context.set(localContext);
