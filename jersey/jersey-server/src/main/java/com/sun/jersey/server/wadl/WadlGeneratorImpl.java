@@ -42,6 +42,8 @@ package com.sun.jersey.server.wadl;
 
 import com.sun.jersey.api.model.AbstractMethod;
 
+import java.util.Map;
+
 import javax.ws.rs.FormParam;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
@@ -59,10 +61,12 @@ import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
 import com.sun.research.ws.wadl.Response;
 
+import java.util.HashMap;
+
 /**
  * This WadlGenerator creates the basic wadl artifacts.<br>
  * Created on: Jun 16, 2008<br>
- * 
+ *
  * @author <a href="mailto:martin.grotzke@freiheit.com">Martin Grotzke</a>
  * @version $Id$
  */
@@ -207,4 +211,11 @@ public class WadlGeneratorImpl implements WadlGenerator {
         return wadlRepresentation;
     }
     
+    
+    // ================ methods for post build actions =======================
+    
+    public Map<String, ApplicationDescription.ExternalGrammar> createExternalGrammar() {
+        // Return an empty list to add to
+        return new HashMap<String, ApplicationDescription.ExternalGrammar>();
+    }    
 }

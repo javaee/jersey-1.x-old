@@ -44,12 +44,14 @@
 
 package com.sun.jersey.api.wadl.config;
 
+import com.sun.jersey.server.wadl.ApplicationDescription.ExternalGrammar;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
@@ -249,6 +251,11 @@ public class WadlGeneratorLoaderTest extends AbstractResourceTester {
 
         public String getRequiredJaxbContextPath() {
             return null;
+        }
+
+        @Override
+        public Map<String, ExternalGrammar> createExternalGrammar() {
+            return _delegate.createExternalGrammar();
         }
         
     }

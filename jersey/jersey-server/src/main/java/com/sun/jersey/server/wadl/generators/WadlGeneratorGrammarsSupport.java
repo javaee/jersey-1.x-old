@@ -41,6 +41,8 @@ package com.sun.jersey.server.wadl.generators;
 
 import java.io.File;
 import java.io.InputStream;
+
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.MediaType;
@@ -53,6 +55,7 @@ import com.sun.jersey.api.model.AbstractResource;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.model.Parameter;
 import com.sun.jersey.api.wadl.config.WadlGeneratorConfig;
+import com.sun.jersey.server.wadl.ApplicationDescription;
 import com.sun.jersey.server.wadl.WadlGenerator;
 import com.sun.research.ws.wadl.Application;
 import com.sun.research.ws.wadl.Grammars;
@@ -239,6 +242,12 @@ public class WadlGeneratorGrammarsSupport implements WadlGenerator {
     public Response createResponse( AbstractResource ar,
             AbstractResourceMethod arm ) {
         return _delegate.createResponse( ar, arm );
+    }
+
+    // ================ methods for post build actions =======================
+    
+    public Map<String, ApplicationDescription.ExternalGrammar> createExternalGrammar() {
+        return _delegate.createExternalGrammar();
     }
 
 }

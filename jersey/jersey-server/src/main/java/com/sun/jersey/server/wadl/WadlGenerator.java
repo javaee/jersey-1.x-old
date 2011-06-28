@@ -41,6 +41,9 @@
 package com.sun.jersey.server.wadl;
 
 import com.sun.jersey.api.model.AbstractMethod;
+
+import java.util.Map;
+
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRegistry;
 
@@ -127,4 +130,19 @@ public interface WadlGenerator {
     public Param createParam(AbstractResource r, 
             AbstractMethod m,
             Parameter p);
+    
+    // ================ methods for post build actions =======================
+    
+    /**
+     * Perform any post create functions such as generating grammars.
+     * @return A map of extra files to the content of those file encoded in UTF-8
+     * @throws Exception
+     */
+    public Map<String, ApplicationDescription.ExternalGrammar> createExternalGrammar();
+    
+    
+    
+    
+    
+    
 }
