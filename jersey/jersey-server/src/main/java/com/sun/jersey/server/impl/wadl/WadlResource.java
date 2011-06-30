@@ -44,6 +44,7 @@ import com.sun.jersey.server.wadl.ApplicationDescription;
 import com.sun.jersey.server.wadl.WadlApplicationContext;
 import com.sun.jersey.spi.resource.Singleton;
 import com.sun.research.ws.wadl.Application;
+import com.sun.research.ws.wadl.Resources;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -90,9 +91,10 @@ public final class WadlResource {
         Application application = applicationDescription.getApplication();
 
         if (wadlXmlRepresentation == null) {
-            if (application.getResources().getBase() == null) {
-                application.getResources().setBase(uriInfo.getBaseUri().toString());
-            }
+            for(Resources resources : application.getResources())
+                if (resources.getBase() == null) {
+                    resources.setBase(uriInfo.getBaseUri().toString());
+                }
             try {
                 final Marshaller marshaller = wadlContext.getJAXBContext().createMarshaller();
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

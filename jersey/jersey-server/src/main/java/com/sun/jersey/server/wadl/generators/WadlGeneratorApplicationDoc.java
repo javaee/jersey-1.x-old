@@ -58,7 +58,7 @@ import com.sun.jersey.server.wadl.WadlGenerator;
 import com.sun.research.ws.wadl.Application;
 import com.sun.research.ws.wadl.Method;
 import com.sun.research.ws.wadl.Param;
-import com.sun.research.ws.wadl.RepresentationType;
+import com.sun.research.ws.wadl.Representation;
 import com.sun.research.ws.wadl.Request;
 import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
@@ -169,7 +169,7 @@ public class WadlGeneratorApplicationDoc implements WadlGenerator {
      * @return representation type
      * @see com.sun.jersey.server.wadl.WadlGenerator#createRequestRepresentation(com.sun.jersey.api.model.AbstractResource, com.sun.jersey.api.model.AbstractResourceMethod, javax.ws.rs.core.MediaType)
      */
-    public RepresentationType createRequestRepresentation(AbstractResource r,
+    public Representation createRequestRepresentation(AbstractResource r,
             AbstractResourceMethod m, MediaType mediaType) {
         return _delegate.createRequestRepresentation(r, m, mediaType);
     }
@@ -223,13 +223,10 @@ public class WadlGeneratorApplicationDoc implements WadlGenerator {
     public Resources createResources() {
         return _delegate.createResources();
     }
-    
-    
-    
+
     // ================ methods for post build actions =======================
     
     public Map<String, ApplicationDescription.ExternalGrammar> createExternalGrammar() {
         return _delegate.createExternalGrammar();
     }
-    
 }

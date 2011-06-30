@@ -53,6 +53,7 @@ import com.sun.research.ws.wadl.Doc;
 import com.sun.research.ws.wadl.Grammars;
 import com.sun.research.ws.wadl.Include;
 import com.sun.research.ws.wadl.Resource;
+import com.sun.research.ws.wadl.Resources;
 import java.net.URI;
 import java.util.Map;
 
@@ -103,7 +104,8 @@ public class WadlApplicationContextImpl implements WadlApplicationContext {
     public ApplicationDescription getApplication(UriInfo ui) {
         ApplicationDescription a = getWadlBuilder().generate(rootResources);
         final Application application = a.getApplication();
-        application.getResources().setBase(ui.getBaseUri().toString());
+        for(Resources resources : application.getResources())
+            resources.setBase(ui.getBaseUri().toString());
         attachExternalGrammar(application,a, ui.getRequestUri());
         return a;
     }
@@ -117,8 +119,9 @@ public class WadlApplicationContextImpl implements WadlApplicationContext {
         Application a = path == null ? new WadlBuilder( wadlGenerator ).generate(resource) :
                 new WadlBuilder( wadlGenerator ).generate(resource, path);
 
-        a.getResources().setBase(info.getBaseUri().toString());
-        
+        for(Resources resources : a.getResources())
+            resources.setBase(info.getBaseUri().toString());
+
         // Attach any grammar we may have
         
         attachExternalGrammar(a, 
@@ -127,12 +130,13 @@ public class WadlApplicationContextImpl implements WadlApplicationContext {
         
         //
 
-        final Resource r = a.getResources().getResource().get(0);
-        r.setPath(info.getBaseUri().relativize(
-                info.getAbsolutePath()).toString());
+        for(Resources resources : a.getResources()) {
+            final Resource r = resources.getResource().get(0);
+            r.setPath(info.getBaseUri().relativize(info.getAbsolutePath()).toString());
 
-        // remove path params since path is fixed at this point
-        r.getParam().clear();
+            // remove path params since path is fixed at this point
+            r.getParam().clear();
+        }
 
         return a;
     }
@@ -188,7 +192,7 @@ public class WadlApplicationContextImpl implements WadlApplicationContext {
         }
         
 
-        String root = application.getResources().getBase();
+        String root = application.getResources().get(0).getBase();
         UriBuilder extendedPath = root!=null ?
                 UriBuilder.fromPath(root).path("/application.wadl/")
                 : UriBuilder.fromPath("./application.wadl/");

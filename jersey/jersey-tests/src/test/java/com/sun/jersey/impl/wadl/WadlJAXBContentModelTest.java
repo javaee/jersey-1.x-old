@@ -147,15 +147,15 @@ public class WadlJAXBContentModelTest extends AbstractResourceTester {
         // Okay lets see if we can find the right references
         //
         
-        Resource resource = a.getResources().getResource().get(0);
+        Resource resource = a.getResources().get(0).getResource().get(0);
         
         Method get = (Method)resource.getMethodOrResource().get(0);
-        QName responseType  = get.getResponse().getRepresentationOrFault().get(0).getValue().getElement(); 
+        QName responseType  = get.getResponse().get(0).getRepresentation().get(0).getElement();
         assertEquals(ResponseMessage.name, responseType);
         
         Method put = (Method)resource.getMethodOrResource().get(1);
         QName requestType  = put.getRequest().getRepresentation().get(0).getElement(); 
-        responseType  = put.getResponse().getRepresentationOrFault().get(0).getValue().getElement(); 
+        responseType  = put.getResponse().get(0).getRepresentation().get(0).getElement();
         assertEquals(ResponseMessage.name, responseType);
         assertEquals(RequestMessage.name, requestType);
         
@@ -329,10 +329,10 @@ public class WadlJAXBContentModelTest extends AbstractResourceTester {
         // Okay lets see if we can find the right references
         //
         
-        Resource resource = a.getResources().getResource().get(0);
+        Resource resource = a.getResources().get(0).getResource().get(0);
         Method put = (Method)resource.getMethodOrResource().get(0);
         QName requestType  = put.getRequest().getRepresentation().get(0).getElement(); 
-        QName responseType  = put.getResponse().getRepresentationOrFault().get(0).getValue().getElement(); 
+        QName responseType  = put.getResponse().get(0).getRepresentation().get(0).getElement();
         assertEquals(ResponseMessageDifferentNamespace.name, responseType);
         assertEquals(RequestMessage.name, requestType);
         

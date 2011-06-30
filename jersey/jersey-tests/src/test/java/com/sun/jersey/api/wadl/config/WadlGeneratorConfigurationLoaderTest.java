@@ -57,19 +57,20 @@ import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.api.model.AbstractResource;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.model.Parameter;
-import com.sun.jersey.api.wadl.config.WadlGeneratorConfig;
-import com.sun.jersey.api.wadl.config.WadlGeneratorConfigLoader;
-import com.sun.jersey.api.wadl.config.WadlGeneratorDescription;
 import com.sun.jersey.impl.AbstractResourceTester;
 import com.sun.jersey.server.wadl.WadlGenerator;
 import com.sun.research.ws.wadl.Application;
 import com.sun.research.ws.wadl.Method;
 import com.sun.research.ws.wadl.Param;
-import com.sun.research.ws.wadl.RepresentationType;
+import com.sun.research.ws.wadl.Representation;
 import com.sun.research.ws.wadl.Request;
 import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
 import com.sun.research.ws.wadl.Response;
+
+import javax.ws.rs.core.MediaType;
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * TODO: DESCRIBE ME<br>
@@ -141,7 +142,7 @@ public class WadlGeneratorConfigurationLoaderTest extends AbstractResourceTester
             return null;
         }
 
-        public RepresentationType createRequestRepresentation(
+        public Representation createRequestRepresentation(
                 AbstractResource r, AbstractResourceMethod m,
                 MediaType mediaType ) {
             return null;

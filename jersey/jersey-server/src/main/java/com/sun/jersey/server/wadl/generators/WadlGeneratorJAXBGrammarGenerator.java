@@ -59,7 +59,7 @@ import com.sun.jersey.server.wadl.WadlGenerator;
 import com.sun.research.ws.wadl.Application;
 import com.sun.research.ws.wadl.Method;
 import com.sun.research.ws.wadl.Param;
-import com.sun.research.ws.wadl.RepresentationType;
+import com.sun.research.ws.wadl.Representation;
 import com.sun.research.ws.wadl.Request;
 import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
@@ -263,10 +263,10 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
      * @return respresentation type
      * @see com.sun.jersey.server.wadl.WadlGenerator#createRequestRepresentation(com.sun.jersey.api.model.AbstractResource, com.sun.jersey.api.model.AbstractResourceMethod, javax.ws.rs.core.MediaType)
      */
-    public RepresentationType createRequestRepresentation(
+    public Representation createRequestRepresentation(
             AbstractResource ar, AbstractResourceMethod arm, MediaType mt ) {
 
-        final RepresentationType rt = _delegate.createRequestRepresentation( ar, arm, mt );
+        final Representation rt = _delegate.createRequestRepresentation( ar, arm, mt );
 
         for (Parameter p : arm.getParameters()) {
             if (p.getSource() == Parameter.Source.ENTITY) {
@@ -334,8 +334,8 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
             _elementsWhoWantNamesList.add(new WantsName() {
                 @Override
                 public void setName(QName name) {
-                    JAXBElement<RepresentationType> type = response.getRepresentationOrFault().get(0);
-                    type.getValue().setElement(name);
+                    Representation representation = response.getRepresentation().get(0);
+                    representation.setElement(name);
                 }
             });
         }
