@@ -40,21 +40,12 @@
 package com.sun.jersey.server.wadl.generators;
 
 import com.sun.jersey.api.JResponse;
-import com.sun.jersey.server.wadl.ApplicationDescription.ExternalGrammar;
-
-
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.JAXBIntrospector;
-
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.api.model.AbstractResource;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.api.model.Parameter;
 import com.sun.jersey.server.wadl.ApplicationDescription;
+import com.sun.jersey.server.wadl.ApplicationDescription.ExternalGrammar;
 import com.sun.jersey.server.wadl.WadlGenerator;
 import com.sun.research.ws.wadl.Application;
 import com.sun.research.ws.wadl.Method;
@@ -65,32 +56,29 @@ import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
 import com.sun.research.ws.wadl.Response;
 
-import java.io.CharArrayWriter;
-
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import java.util.Set;
-
-import java.util.logging.Level;
-
-
-import javax.xml.bind.JAXBElement;
-
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This {@link WadlGenerator} generates a XML Schema content model based on
@@ -160,10 +148,6 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
     private List<HasType> _elementsWithTypeList;
     private List<WantsName> _elementsWhoWantNamesList;
     
-    // The stored application
-    private Application _application;
-    
-    
     public WadlGeneratorJAXBGrammarGenerator() {
     }
 
@@ -187,10 +171,6 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
         // entity objects that we might like to transform.
         _elementsWithTypeList = new ArrayList<HasType>();
         _elementsWhoWantNamesList = new ArrayList<WantsName>();
-
-        // The store application
-        //
-        _application = null;
     }
     
     // =============== Application Creation ================================
@@ -201,9 +181,7 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
      * @see com.sun.jersey.server.wadl.WadlGenerator#createApplication()
      */
     public Application createApplication() {
-        final Application result = _delegate.createApplication();
-        _application = result;
-        return result;
+        return _delegate.createApplication();
     }
 
     /**
@@ -226,8 +204,7 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
     public Request createRequest( AbstractResource ar,
             AbstractResourceMethod arm ) {
 
-        final Request request = _delegate.createRequest( ar, arm );
-        return request;
+        return _delegate.createRequest( ar, arm );
     }
 
     /**
@@ -295,9 +272,7 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
         Class cls = ar.getResourceClass();
         XmlSeeAlso seeAlso = (XmlSeeAlso)cls.getAnnotation( XmlSeeAlso.class );
         if ( seeAlso !=null ) {
-            for (Class c : seeAlso.value()) {
-                _seeAlso.add( c );
-            }
+            Collections.addAll(_seeAlso, seeAlso.value());
         }
 
         return _delegate.createResource( ar, path );
@@ -488,7 +463,7 @@ public class WadlGeneratorJAXBGrammarGenerator implements WadlGenerator {
                     nextToProcess.setName(name);
                 } 
                 else  {
-                    LOG.info("Couldn't find JAX-B element for class " + parameterClass);
+                    LOG.info("Couldn't find JAX-B element for class " + parameterClass.getName());
                 }
             }
         }

@@ -39,17 +39,6 @@
  */
 package com.sun.jersey.server.wadl.generators;
 
-import java.io.File;
-import java.io.InputStream;
-
-import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.api.model.AbstractResource;
 import com.sun.jersey.api.model.AbstractResourceMethod;
@@ -66,6 +55,14 @@ import com.sun.research.ws.wadl.Request;
 import com.sun.research.ws.wadl.Resource;
 import com.sun.research.ws.wadl.Resources;
 import com.sun.research.ws.wadl.Response;
+
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This {@link WadlGenerator} adds the provided {@link Grammars} element to the
@@ -136,12 +133,6 @@ public class WadlGeneratorGrammarsSupport implements WadlGenerator {
         final Unmarshaller m = c.createUnmarshaller();
         final Object obj = _grammarsFile != null ? m.unmarshal( _grammarsFile ) : m.unmarshal( _grammarsStream );
         _grammars = Grammars.class.cast( obj );
-    }
-    
-    private <T> T loadFile( InputStream fileToLoad, Class<T> targetClass ) throws JAXBException {
-        final JAXBContext c = JAXBContext.newInstance( targetClass );
-        final Unmarshaller m = c.createUnmarshaller();
-        return targetClass.cast( m.unmarshal( fileToLoad ) );
     }
 
     /**
